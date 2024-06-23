@@ -9,18 +9,16 @@ import PostDetail from "./src/screens/PostDetail";
 import MyFav from "./src/screens/MyFavorites";
 import MyRoutes from "./src/screens/MyRoutes";
 import EdProf from "./src/screens/EditProfile";
-import 'react-native-gesture-handler';
+import "react-native-gesture-handler";
 import FollowRoute from "./src/screens/FollowRoute";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";
 import SplashScreen from "./src/screens/SplashScreen";
-
+import PostShare from "./src/screens/PostShare";
 
 const Stack = createNativeStackNavigator();
 
 function App() {
-
-
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -56,6 +54,7 @@ function App() {
           component={Register}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="PostShare" component={PostShare} />
         <Stack.Screen name="PostDetail" component={PostDetail} />
         <Stack.Screen name="MyFavorites" component={MyFav} />
         <Stack.Screen name="MyRoutes" component={MyRoutes} />
