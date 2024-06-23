@@ -11,8 +11,7 @@ import MyRoutes from "./src/screens/MyRoutes";
 import EdProf from "./src/screens/EditProfile";
 import 'react-native-gesture-handler';
 import FollowRoute from "./src/screens/FollowRoute";
-import { Provider, useDispatch } from "react-redux";
-import { loadToken } from "./src/events/auth";
+import { Provider } from "react-redux";
 import store from "./src/redux/store";
 import SplashScreen from "./src/screens/SplashScreen";
 
@@ -20,11 +19,7 @@ import SplashScreen from "./src/screens/SplashScreen";
 const Stack = createNativeStackNavigator();
 
 function App() {
-  const dispatch = useDispatch();
 
-  React.useEffect(() => {
-    dispatch(loadToken());
-  }, [dispatch]);
 
   return (
     <NavigationContainer>
