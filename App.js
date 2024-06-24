@@ -15,6 +15,7 @@ import { Provider } from "react-redux";
 import store from "./src/redux/store";
 import SplashScreen from "./src/screens/SplashScreen";
 import PostShare from "./src/screens/PostShare";
+import MyPosts from "./src/screens/MyPosts";
 
 const Stack = createNativeStackNavigator();
 
@@ -59,6 +60,7 @@ function App() {
         <Stack.Screen name="MyFavorites" component={MyFav} />
         <Stack.Screen name="MyRoutes" component={MyRoutes} />
         <Stack.Screen name="EditProfile" component={EdProf} />
+        <Stack.Screen name="MyPosts" component={MyPosts} />
       </Stack.Navigator>
     </NavigationContainer>
   );

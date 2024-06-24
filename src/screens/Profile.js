@@ -67,6 +67,10 @@ export default function Profile({ navigation }) {
             <Text style={styles.buttonText}>Favoriler</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MyPosts')}>
+            <Text style={styles.buttonText}>Postlarım</Text>
+          </TouchableOpacity>
+
         </View>
       </ScrollView>
     </SafeAreaView>
