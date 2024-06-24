@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "rea
 import axios from "axios";
 import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
+import { POST_HOMEPAGE } from "../constants/links";
 
 const HomePage = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -11,7 +12,7 @@ const HomePage = ({ navigation }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get("http://192.168.1.34:5000/terra-track/api/posts");
+        const response = await axios.get(POST_HOMEPAGE);
        //console.log('API Response:', response.data); // API yanıtını konsola loglayın
         setPosts(response.data);
       } catch (error) {
