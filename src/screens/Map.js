@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet, View, Button } from "react-native";
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
-export default function App() {
+const Map = () => {
   const [locationState, setLocationState] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [markers, setMarkers] = useState([]);
   const [recording, setRecording] = useState(false);
   const [subscription, setSubscription] = useState(null);
+
+  const navigation = useNavigation();
 
   useEffect(() => {
     (async () => {
@@ -19,6 +22,20 @@ export default function App() {
       }
     })();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Sayfa odağa geldiğinde yapılacak işlemler
+      return () => {
+        // Sayfa odağını kaybettiğinde yapılacak işlemler
+        if (subscription) {
+          subscription.remove();
+          setSubscription(null);
+          setRecording(false);
+        }
+      };
+    }, [subscription])
+  );
 
   const startRecording = async () => {
     setRecording(true);
@@ -49,6 +66,14 @@ export default function App() {
     setMarkers([]);
   };
 
+  const navigateToSaveRoute = () => {
+    if (markers.length > 0) {
+      navigation.navigate('SaveRoute', { points: markers });
+    } else {
+      alert("Markers array is empty!");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <MapView style={styles.map}>
@@ -63,7 +88,8 @@ export default function App() {
         ) : (
           <Button title="Pause" onPress={pauseRecording} />
         )}
-        <Button title="Stop" onPress={stopRecording} />
+        <Button title="Reset" onPress={stopRecording} />
+        <Button title="Finish The Walk" onPress={navigateToSaveRoute} />
       </View>
     </View>
   );
@@ -83,3 +109,5 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
+
+export default Map;
