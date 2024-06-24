@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, TextInput } from 'react-native';
 import { Button, IconButton, Card } from 'react-native-paper';
-// import Carousel from 'react-native-snap-carousel';
+import axios from 'axios';
 
-const PostDetail = ({ navigation }) => {
-    const [isFavorite, setIsFavorite] = useState(false);
-    const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState('');
-
-    const post = {
+const PostDetail = ({ navigation, route }) => {
+    const { postId } = route.params;
+    const [post, setPost] = useState({
         title: 'Monopetra-Çifte Kaynaklar',
         date: '2023-06-10',
         tags: ['Etiket 1', 'Etiket 2'],
@@ -22,7 +19,11 @@ const PostDetail = ({ navigation }) => {
             'https://via.placeholder.com/800x400.png?text=Photo+2',
             'https://via.placeholder.com/800x400.png?text=Photo+3',
         ],
-    };
+    });
+
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
 
     const handleFollowRoute = () => {
         navigation.navigate('Map'); // 'Map' sayfasına yönlendirir
@@ -45,19 +46,26 @@ const PostDetail = ({ navigation }) => {
         );
     };
 
+    const handleUpdatePost = () => {
+        navigation.navigate('PostUpdate', { postId });
+    };
+
+    const handleDeletePost = async () => {
+        try {
+            await axios.delete(`http://172.20.10.2:5000/terra-track/api/posts/${postId}`);
+            Alert.alert('Post Silme', 'Post başarıyla silindi.');
+            navigation.goBack();
+        } catch (error) {
+            Alert.alert('Hata', 'Post silinirken bir hata oluştu.');
+        }
+    };
+
     const renderItem = ({ item }) => (
         <Image source={{ uri: item }} style={styles.image} />
     );
 
     return (
         <ScrollView style={styles.container}>
-            {/* <Carousel
-                data={post.images}
-                renderItem={renderItem}
-                sliderWidth={400}
-                itemWidth={400}
-                loop={true}
-            /> */}
             <View style={styles.contentContainer}>
                 <Button mode="contained" onPress={handleFollowRoute} style={styles.followButton}>
                     Rotayı Takip Et
@@ -114,6 +122,14 @@ const PostDetail = ({ navigation }) => {
                         />
                         <Text style={styles.iconLabel}>Favori</Text>
                     </View>
+                </View>
+                <View style={styles.buttonContainer}>
+                    <Button mode="contained" onPress={handleUpdatePost} style={styles.updateButton}>
+                         Güncelle
+                    </Button>
+                    <Button mode="contained" onPress={handleDeletePost} style={styles.deleteButton}>
+                         Sil
+                    </Button>
                 </View>
                 <Card style={styles.card}>
                     <Card.Title title="Yorumlar ve Değerlendirmeler" />
@@ -229,6 +245,25 @@ const styles = StyleSheet.create({
         height: 200,
         borderRadius: 10,
         marginBottom: 20,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    updateButton: {
+        backgroundColor: '#f0ad4e',
+        borderRadius: 8,
+        padding: 10,
+        flex: 1,
+        marginRight: 10,
+    },
+    deleteButton: {
+        backgroundColor: '#d9534f',
+        borderRadius: 8,
+        padding: 10,
+        flex: 1,
+        marginLeft: 10,
     },
     card: {
         marginTop: 20,

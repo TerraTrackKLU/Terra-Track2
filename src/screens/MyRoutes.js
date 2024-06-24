@@ -38,7 +38,7 @@ const MyRoutes = ({ navigation }) => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/routes/1'); // Kullanıcı ID'sine göre güncelleyin
+        const response = await axios.get(`http://172.20.10.2:5000/terra-track/api/routes/1`); // Kullanıcı ID'sine göre güncelleyin
         setRoutes(response.data);
       } catch (error) {
         console.error(error);

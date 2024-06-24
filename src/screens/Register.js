@@ -4,7 +4,6 @@ import { TextInput } from "react-native-paper";
 import axios from "axios";
 import { REGISTER } from "../constants/links";
 
-
 const Register = ({ navigation }) => {
   const [state, setState] = useState({
     name: "",
@@ -44,7 +43,6 @@ const Register = ({ navigation }) => {
       password,
       birthDate
     };
-
 
     await axios.post(REGISTER, requestBody).then((res) => {
       Alert.alert('Başarılı', 'Kayıt başarılı!', [{ text: 'Tamam', onPress: () => navigation.navigate('Login') }]);

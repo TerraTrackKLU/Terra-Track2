@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
 import axios from "axios";
-import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
+import { Appbar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { POST_HOMEPAGE } from "../constants/links";
 
@@ -13,15 +13,23 @@ const HomePage = ({ navigation }) => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get(POST_HOMEPAGE);
-       //console.log('API Response:', response.data); // API yanıtını konsola loglayın
         setPosts(response.data);
       } catch (error) {
-        console.error('Error fetching posts:', error); // Hata durumunu loglayın
+        console.error('Error fetching posts:', error);
       }
     };
 
     fetchPosts();
   }, []);
+
+  const addToFavorites = async (postId) => {
+    try {
+      await axios.post(`http://172.20.10.2:5000/terra-track/api/favorites`, { userId: user._id, postId });
+      console.log('Post favorilere eklendi.');
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -55,8 +63,8 @@ const HomePage = ({ navigation }) => {
               <Text style={styles.caption}>{post.description}</Text>
             </Card.Content>
             <Card.Actions>
-              <PaperButton icon="heart-outline" onPress={() => { }}>Like</PaperButton>
-              <PaperButton icon="comment-outline" onPress={() => { }}>Comment</PaperButton>
+              <PaperButton icon="heart-outline" onPress={() => addToFavorites(post._id)}>Like</PaperButton>
+              <PaperButton icon="comment-outline" onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>Comment</PaperButton>
             </Card.Actions>
           </Card>
         ))}

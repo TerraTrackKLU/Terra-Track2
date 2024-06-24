@@ -11,7 +11,7 @@ export default function Profile({ navigation }) {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/users/1'); // Kullanıcı ID'sine göre güncelleyin
+        const response = await axios.get(`http://172.20.10.2:5000/terra-track/api/users/1`); // Kullanıcı ID'sine göre güncelleyin
         setUsername(response.data.username);
       } catch (error) {
         console.error(error);
