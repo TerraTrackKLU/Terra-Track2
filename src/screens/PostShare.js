@@ -13,6 +13,7 @@ import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Picker } from "@react-native-picker/picker";
+import { POST_SHARE } from "../constants/links";
 
 const PostShare = ({ navigation }) => {
   const [title, setTitle] = useState("");
@@ -30,7 +31,7 @@ const PostShare = ({ navigation }) => {
     console.log("Post paylaş butonuna tıklandı");
     try {
       const response = await axios.post(
-        "http://192.168.1.34:5000/terra-track/api/posts/create",
+        POST_SHARE,
         {
           title,
           content,
