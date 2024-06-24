@@ -30,7 +30,7 @@ const PostShare = ({ navigation }) => {
     console.log("Post paylaş butonuna tıklandı");
     try {
       const response = await axios.post(
-        "http://172.20.208.1:5000/terra-track/api/posts/create",
+        "http://192.168.1.34:5000/terra-track/api/posts/create",
         {
           title,
           content,
@@ -43,7 +43,7 @@ const PostShare = ({ navigation }) => {
           tags: selectedTags,
         }
       );
-      console.log("Response:", response);
+     // console.log("Response:", response);
       if (response.status === 201) {
         alert("Post başarıyla paylaşıldı!");
         navigation.goBack();
@@ -209,7 +209,7 @@ const PostShare = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 16,
     backgroundColor: "#f8f9fa",
   },
