@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../constants/links';
 
 const MyRoutes = ({ navigation }) => {
@@ -9,10 +10,15 @@ const MyRoutes = ({ navigation }) => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/routes`); // Tüm rotaları çeken endpoint
+        const userId = await AsyncStorage.getItem('userId');
+        if (!userId) {
+          console.error('User ID not found');
+          return;
+        }
+        const response = await axios.get(`${BASE_URL}/routes/user/${userId}`);
         setRoutes(response.data);
       } catch (error) {
-        console.error("Error fetching routes:", error);
+        console.error('Error fetching routes:', error);
       }
     };
 

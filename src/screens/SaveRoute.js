@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SAVE_ROUTE } from '../constants/links';
 
 const SaveRoute = () => {
@@ -17,11 +18,14 @@ const SaveRoute = () => {
     const [owner, setOwner] = useState('');
 
     useEffect(() => {
+        const fetchOwner = async () => {
+            const userId = await AsyncStorage.getItem('userId');
+            setOwner(userId);
+        };
 
-
-        console.log(points)
-    }, [])
-
+        fetchOwner();
+        console.log(points);
+    }, []);
 
     const saveRoute = async () => {
         try {
@@ -31,7 +35,7 @@ const SaveRoute = () => {
                 distance,
                 elevationGain,
                 laps,
-                owner: '666c97d9b56689bfd35469d9',
+                owner,
                 points,
             });
             console.log('Route saved successfully', response.data);
