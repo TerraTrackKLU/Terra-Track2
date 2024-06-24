@@ -1,47 +1,33 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Button,
-} from "react-native";
-import { Appbar, Avatar, Card } from "react-native-paper";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import axios from "axios";
+import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
 
 const HomePage = ({ navigation }) => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      user: "john_doe",
-      avatar: "https://via.placeholder.com/150",
-      image: "https://via.placeholder.com/500",
-      caption: "Beautiful day!",
-    },
-    {
-      id: 2,
-      user: "jane_doe",
-      avatar: "https://via.placeholder.com/150",
-      image: "https://via.placeholder.com/500",
-      caption: "Lovely sunset!",
-    },
-    // Daha fazla örnek gönderi ekleyebilirsiniz
-  ]);
+  const [posts, setPosts] = useState([]);
   const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
-    console.log(user);
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get("http://192.168.1.34:5000/terra-track/api/posts");
+       //console.log('API Response:', response.data); // API yanıtını konsola loglayın
+        setPosts(response.data);
+      } catch (error) {
+        console.error('Error fetching posts:', error); // Hata durumunu loglayın
+      }
+    };
+
+    fetchPosts();
   }, []);
 
   return (
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.Content title="Home" />
-        <Appbar.Action icon="magnify" onPress={() => {}} />
-        <Appbar.Action icon="message" onPress={() => {}} />
+        <Appbar.Action icon="magnify" onPress={() => { }} />
+        <Appbar.Action icon="message" onPress={() => { }} />
       </Appbar.Header>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
@@ -50,38 +36,26 @@ const HomePage = ({ navigation }) => {
           <Text style={styles.logoText}>Track</Text>
         </View>
       </View>
-
-      <Button
-        title="Post Paylaş"
-        onPress={() => navigation.navigate("PostShare")} // Ensure this matches the screen name
-      />
+      <TouchableOpacity style={styles.postButton} onPress={() => navigation.navigate("PostShare")}>
+        <Text style={styles.postButtonText}>Post Paylaş</Text>
+      </TouchableOpacity>
 
       <ScrollView>
         {posts.map((post) => (
-          <Card key={post.id} style={styles.card}>
+          <Card key={post._id} style={styles.card}>
             <Card.Title
-              title={post.user}
-              left={(props) => (
-                <Avatar.Image {...props} source={{ uri: post.avatar }} />
-              )}
+              title={post.title}
+              subtitle={post.routeType}
             />
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("PostDetail", { postId: post.id })
-              }
-            >
-              <Card.Cover source={{ uri: post.image }} />
+            <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
+              <Card.Cover source={{ uri: post.images[0] }} />
             </TouchableOpacity>
             <Card.Content>
-              <Text style={styles.caption}>{post.caption}</Text>
+              <Text style={styles.caption}>{post.description}</Text>
             </Card.Content>
             <Card.Actions>
-              <Button title="Like" onPress={() => {}}>
-                Like
-              </Button>
-              <Button title="Comment" onPress={() => {}}>
-                Comment
-              </Button>
+              <PaperButton icon="heart-outline" onPress={() => { }}>Like</PaperButton>
+              <PaperButton icon="comment-outline" onPress={() => { }}>Comment</PaperButton>
             </Card.Actions>
           </Card>
         ))}
@@ -125,6 +99,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  postButton: {
+    backgroundColor: "#6200ee",
+    padding: 10,
+    margin: 20,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  postButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
