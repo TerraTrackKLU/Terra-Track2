@@ -1,32 +1,50 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, SafeAreaView, Image, ScrollView, TouchableOpacity } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUserProfileUrl } from "../constants/links";
+import { useFocusEffect } from "@react-navigation/native";
+import { GET_USER } from "../constants/links";
 
 const Profile = ({ navigation }) => {
-  const [user, setUser] = useState({ name: "", surname: "", username: "" });
+  const [user, setUser] = useState({
+    name: "",
+    surname: "",
+    username: "",
+    profilePic: "",
+  });
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const userProfileUrl = await getUserProfileUrl();
-        console.log('User Profile URL:', userProfileUrl);
-        const response = await axios.get(userProfileUrl, {
-          headers: { userid: await AsyncStorage.getItem("userId") }
-        });
-        setUser({
-          name: response.data.name,
-          surname: response.data.surname,
-          username: response.data.nickname,
-        });
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-      }
-    };
+  const fetchUserProfile = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      const response = await axios.get(GET_USER, {
+        headers: { userid: userId },
+      });
+      setUser({
+        name: response.data.name,
+        surname: response.data.surname,
+        username: response.data.nickname,
+        profilePic:
+          response.data.profilePic ||
+          "https://w7.pngwing.com/pngs/744/940/png-transparent-anonym-avatar-default-head-person-unknown-user-user-pictures-icon.png",
+      });
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
-    fetchUserProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
     try {
@@ -47,17 +65,34 @@ const Profile = ({ navigation }) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ alignSelf: "center", marginTop: 20 }}>
           <View style={styles.profileImage}>
-            <Image source={require("../Images/profile-pic.jpg")} style={styles.image} resizeMode="center" />
+            <Image
+              source={{ uri: user.profilePic }}
+              style={styles.image}
+              resizeMode="center"
+            />
           </View>
         </View>
 
         <View style={styles.infoContainer}>
-          <Text style={[styles.text, { fontWeight: "200", fontSize: 36 }]}>{user.name} {user.surname}</Text>
-          <Text style={[styles.text, { color: "#AEB5BC", fontSize: 18 }]}>@{user.username}</Text>
+          <Text style={[styles.text, { fontWeight: "200", fontSize: 36 }]}>
+            {user.name} {user.surname}
+          </Text>
+          <Text style={[styles.text, { color: "#AEB5BC", fontSize: 18 }]}>
+            @{user.username}
+          </Text>
         </View>
 
         <View style={styles.statsContainer}>
-          <View style={[styles.statsBox, { borderColor: "#DFD8C8", borderLeftWidth: 1, borderRightWidth: 1 }]}>
+          <View
+            style={[
+              styles.statsBox,
+              {
+                borderColor: "#DFD8C8",
+                borderLeftWidth: 1,
+                borderRightWidth: 1,
+              },
+            ]}
+          >
             <Text style={[styles.text, { fontSize: 24 }]}>844</Text>
             <Text style={[styles.text, styles.subText]}>Followers</Text>
           </View>
@@ -67,20 +102,32 @@ const Profile = ({ navigation }) => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile')}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => navigation.navigate("EditProfile")}
+        >
           <Text style={styles.buttonText}>Düzenle</Text>
         </TouchableOpacity>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MyRoutes')}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("MyRoutes")}
+          >
             <Text style={styles.buttonText}>Rotalarım</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MyFavorites')}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("MyFavorites")}
+          >
             <Text style={styles.buttonText}>Favoriler</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MyPosts')}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("MyPosts")}
+          >
             <Text style={styles.buttonText}>Postlarım</Text>
           </TouchableOpacity>
         </View>
@@ -142,8 +189,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginHorizontal: 20,
     marginTop: 20,
   },
