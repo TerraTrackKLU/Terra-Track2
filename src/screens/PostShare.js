@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Picker } from "@react-native-picker/picker";
 import { POST_SHARE } from "../constants/links";
+import { useSelector } from "react-redux";
 
 const PostShare = ({ navigation }) => {
   const [title, setTitle] = useState("");
@@ -27,30 +28,48 @@ const PostShare = ({ navigation }) => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [tag, setTag] = useState("");
 
+  const user = useSelector((state) => state.user.user);
+
+  useEffect(() => {
+    if (!user) {
+      console.error("User not found in Redux store");
+    } else {
+      console.log("User ID from Redux store:", user._id);
+    }
+  }, [user]);
+
   const handlePostShare = async () => {
-    console.log("Post paylaş butonuna tıklandı");
+    if (!user || !user._id) {
+      alert("User ID bulunamadı");
+      return;
+    }
+
+    const date = new Date().toISOString();
+    const postData = {
+      title,
+      content,
+      distance,
+      difficulty,
+      duration,
+      routeType,
+      description,
+      images,
+      tags: selectedTags,
+      userId: user._id, // Kullanıcı kimliği
+      date, // Tarih bilgisi
+    };
+    //console.log("Gönderilen veri:", postData);
+
     try {
-      const response = await axios.post(
-        POST_SHARE,
-        {
-          title,
-          content,
-          distance,
-          difficulty,
-          duration,
-          routeType,
-          description,
-          images,
-          tags: selectedTags,
-        }
-      );
-     // console.log("Response:", response);
+      const response = await axios.post(POST_SHARE, postData);
+      //console.log("Response:", response);
       if (response.status === 201) {
         alert("Post başarıyla paylaşıldı!");
         navigation.goBack();
       }
     } catch (error) {
       console.error("Post paylaşma hatası:", error);
+      console.log("Error response data:", error.response.data);
       alert("Post paylaşma sırasında bir hata oluştu.");
     }
   };
@@ -73,7 +92,7 @@ const PostShare = ({ navigation }) => {
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
 
-      console.log("Picked Image URI:", imageUri);
+      //console.log("Picked Image URI:", imageUri);
 
       if (typeof imageUri !== "string") {
         console.error("Picked Image URI is not a string");
@@ -87,7 +106,7 @@ const PostShare = ({ navigation }) => {
           { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
         );
 
-        console.log("Manipulated Image Result:", manipResult);
+        //console.log("Manipulated Image Result:", manipResult);
 
         if (typeof manipResult.uri !== "string") {
           console.error("Manipulated Image URI is not a string");
