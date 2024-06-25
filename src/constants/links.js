@@ -1,4 +1,6 @@
-const MY_IP = "172.20.208.1";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const MY_IP = "192.168.36.67";
 
 export const BASE_URL = `http://${MY_IP}:5000/terra-track/api`;
 export const REGISTER = BASE_URL + "/auth/register";
@@ -7,9 +9,21 @@ export const GET_USER = BASE_URL + "/auth/get-user";
 export const UPDATE_USER = BASE_URL + "/auth/update-user";
 export const POST_SHARE = BASE_URL + "/posts/create";
 export const POST_HOMEPAGE = BASE_URL + "/posts";
-export const PROFİLE = BASE_URL + "/posts";
+export const PROFILE = BASE_URL + "/posts";
+export const POST_MY = BASE_URL + "/posts";
+export const SAVE_ROUTE = BASE_URL + "/routes/create";
+export const LIKE_POST = BASE_URL + "/posts/like/";
+export const UNLIKE_POST = BASE_URL + "/posts/unlike/";
+
+
+
 
 export const getUserProfileUrl = async () => {
   const userId = await AsyncStorage.getItem("userId");
-  return `${BASE_URL}/auth/get-user`;
+  if (!userId) {
+    throw new Error("User ID not found");
+  }
+  return `${BASE_URL}/users/${userId}`;
 };
+
+
