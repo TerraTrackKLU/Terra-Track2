@@ -11,8 +11,10 @@ const Profile = ({ navigation }) => {
     const fetchUserProfile = async () => {
       try {
         const userProfileUrl = await getUserProfileUrl();
-        console.log('User Profile URL:', userProfileUrl); // Profil URL'sini konsola loglayın
-        const response = await axios.get(userProfileUrl);
+        console.log('User Profile URL:', userProfileUrl);
+        const response = await axios.get(userProfileUrl, {
+          headers: { userid: await AsyncStorage.getItem("userId") }
+        });
         setUser({
           name: response.data.name,
           surname: response.data.surname,
@@ -97,7 +99,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   text: {
-    //fontFamily: "HelveticaNeue",
     color: "#52575D",
   },
   image: {

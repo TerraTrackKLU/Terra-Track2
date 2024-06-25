@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TextInput,
-  Button,
-  StyleSheet,
-  Text,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, TextInput, Button, StyleSheet, Text, Image, ScrollView, TouchableOpacity } from "react-native";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Picker } from "@react-native-picker/picker";
 import { POST_SHARE } from "../constants/links";
 import { useSelector } from "react-redux";
+import { useRoute } from "@react-navigation/native";
 
 const PostShare = ({ navigation }) => {
   const [title, setTitle] = useState("");
@@ -29,6 +21,7 @@ const PostShare = ({ navigation }) => {
   const [tag, setTag] = useState("");
 
   const user = useSelector((state) => state.user.user);
+  const route = useRoute();
 
   useEffect(() => {
     if (!user) {
@@ -36,7 +29,17 @@ const PostShare = ({ navigation }) => {
     } else {
       console.log("User ID from Redux store:", user._id);
     }
-  }, [user]);
+
+    if (route.params && route.params.route) {
+      const { routeName, distance, difficulty, duration, routeType, description } = route.params.route;
+      setTitle(routeName);
+      setDistance(distance);
+      setDifficulty(difficulty);
+      setDuration(duration);
+      setRouteType(routeType);
+      setDescription(description);
+    }
+  }, [user, route.params]);
 
   const handlePostShare = async () => {
     if (!user || !user._id) {
@@ -58,11 +61,9 @@ const PostShare = ({ navigation }) => {
       userId: user._id, // Kullanıcı kimliği
       date, // Tarih bilgisi
     };
-    //console.log("Gönderilen veri:", postData);
 
     try {
       const response = await axios.post(POST_SHARE, postData);
-      //console.log("Response:", response);
       if (response.status === 201) {
         alert("Post başarıyla paylaşıldı!");
         navigation.goBack();
@@ -87,12 +88,8 @@ const PostShare = ({ navigation }) => {
       quality: 1,
     });
 
-    console.log("ImagePicker result:", result);
-
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
-
-      //console.log("Picked Image URI:", imageUri);
 
       if (typeof imageUri !== "string") {
         console.error("Picked Image URI is not a string");
@@ -105,8 +102,6 @@ const PostShare = ({ navigation }) => {
           [{ resize: { width: 800, height: 600 } }],
           { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
         );
-
-        //console.log("Manipulated Image Result:", manipResult);
 
         if (typeof manipResult.uri !== "string") {
           console.error("Manipulated Image URI is not a string");
