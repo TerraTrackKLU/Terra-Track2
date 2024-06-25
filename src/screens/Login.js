@@ -6,6 +6,7 @@ import { saveToken } from "../events/auth";
 import { setUser } from "../redux/slices/userSlice";
 import { useDispatch } from "react-redux";
 import { LOGIN } from "../constants/links";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = ({ navigation }) => {
   const [state, setState] = useState({
@@ -22,11 +23,11 @@ const Login = ({ navigation }) => {
       password
     };
 
-
     await axios.post(LOGIN, requestBody).then(async (res) => {
-
+      const user = res.data.returnedUser;
       await saveToken(res.data.token);
-      // dispatch(setUser({ user }));
+      await AsyncStorage.setItem("userId", user._id); // Kullanıcı ID'sini AsyncStorage'a kaydediyoruz
+      dispatch(setUser({ user }));
       Alert.alert('Başarılı', 'Giriş başarılı!', [{ text: 'Tamam', onPress: () => navigation.navigate('Home') }]);
 
     })

@@ -1,36 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-
-const data = [
-  {
-    id: 1,
-    routeName: 'Monopetra-Çifte Kaynaklar',
-    activityType: 'Doğa Yürüyüşü',
-    distance: '10 km',
-    elevationGain: '350 m',
-    laps: '3 tur',
-    owner: {
-      name: 'John Doe',
-      profilePic: 'https://w7.pngwing.com/pngs/744/940/png-transparent-anonym-avatar-default-head-person-unknown-user-user-pictures-icon.png',
-      profileId: 1, // Profil sayfasına gitmek için kullanılacak ID
-    },
-  },
-  {
-    id: 2,
-    routeName: 'Kamp Rotası 1',
-    activityType: 'Kamp',
-    distance: '10 km',
-    elevationGain: '500 m',
-    laps: '5 tur',
-    owner: {
-      name: 'Jane Smith',
-      profilePic: 'https://w7.pngwing.com/pngs/744/940/png-transparent-anonym-avatar-default-head-person-unknown-user-user-pictures-icon.png',
-      profileId: 2, // Profil sayfasına gitmek için kullanılacak ID
-    },
-  },
-  // Daha fazla rota ekleyin
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../constants/links';
 
 const MyRoutes = ({ navigation }) => {
   const [routes, setRoutes] = useState([]);
@@ -38,20 +10,25 @@ const MyRoutes = ({ navigation }) => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/routes/1'); // Kullanıcı ID'sine göre güncelleyin
+        const userId = await AsyncStorage.getItem('userId');
+        if (!userId) {
+          console.error('User ID not found');
+          return;
+        }
+        const response = await axios.get(`${BASE_URL}/routes/user/${userId}`);
         setRoutes(response.data);
       } catch (error) {
-        console.error(error);
+        console.error('Error fetching routes:', error);
       }
     };
 
     fetchRoutes();
   }, []);
-  
+
   return (
     <ScrollView style={styles.container}>
-      {data.map((item) => (
-        <TouchableOpacity key={item.id} onPress={() => navigation.navigate('PostDetail', { routeId: item.id })}>
+      {routes.map((item) => (
+        <TouchableOpacity key={item._id} onPress={() => navigation.navigate('PostDetail', { routeId: item._id })}>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.routeName}>{item.routeName}</Text>
@@ -74,7 +51,7 @@ const MyRoutes = ({ navigation }) => {
             </View>
             <TouchableOpacity
               style={styles.owner}
-              onPress={() => navigation.navigate('Profile', { profileId: item.owner.profileId })}
+              onPress={() => navigation.navigate('Profile', { profileId: item.owner._id })}
             >
               <Image source={{ uri: item.owner.profilePic }} style={styles.profilePic} />
               <Text style={styles.ownerName}>{item.owner.name}</Text>

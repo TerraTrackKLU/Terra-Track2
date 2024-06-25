@@ -16,6 +16,7 @@ import store from "./src/redux/store";
 import SplashScreen from "./src/screens/SplashScreen";
 import PostShare from "./src/screens/PostShare";
 import MyPosts from "./src/screens/MyPosts";
+import SaveRoute from "./src/screens/SaveRoute";
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,11 @@ function App() {
         <Stack.Screen
           name="Home"
           component={BottomNavigationTab}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="SaveRoute"
+          component={SaveRoute}
           options={{ headerShown: false }}
         />
         <Stack.Screen
