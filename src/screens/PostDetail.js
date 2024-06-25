@@ -267,188 +267,195 @@ import { BASE_URL } from '../constants/links';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PostDetail = () => {
-    const navigation = useNavigation();
-    const route = useRoute();
-    const { routeId, postId } = route.params;
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { routeId, postId } = route.params;
 
-    const [post, setPost] = useState(null);
-    const [isFavorite, setIsFavorite] = useState(false);
-    const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState('');
-    const [userId, setUserId] = useState(null);
+  const [post, setPost] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [userId, setUserId] = useState(null);
+  const [userName, setUserName] = useState('');
 
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                let response;
-                if (routeId) {
-                    response = await axios.get(`${BASE_URL}/routes/${routeId}`);
-                } else if (postId) {
-                    response = await axios.get(`${BASE_URL}/posts/${postId}`);
-                }
-                setPost(response.data);
-            } catch (error) {
-                console.error("Error fetching post details:", error);
-            }
-        };
-
-        const fetchComments = async () => {
-            try {
-                const response = await axios.get(`${BASE_URL}/comments/${routeId || postId}`);
-                setComments(response.data);
-            } catch (error) {
-                console.error("Error fetching comments:", error);
-            }
-        };
-
-        const getUserId = async () => {
-            const id = await AsyncStorage.getItem('userId');
-            setUserId(id);
-        };
-
-        fetchPost();
-        fetchComments();
-        getUserId();
-    }, [routeId, postId]);
-
-    const handleFollowRoute = () => {
-        navigation.navigate('Map'); // 'Map' sayfasına yönlendirir
-    };
-
-    const handleComment = async () => {
-        if (newComment.trim() !== '') {
-            try {
-                await axios.post(`${BASE_URL}/comments`, {
-                    route: routeId || postId,
-                    user: userId,
-                    text: newComment
-                });
-                setComments([...comments, { text: newComment, date: new Date(), user: { _id: userId, name: 'Your Name' } }]);
-                setNewComment('');
-            } catch (error) {
-                console.error('Error posting comment', error);
-                Alert.alert('Error', 'Yorum gönderilemedi. Lütfen tekrar deneyin.');
-            }
-        } else {
-            Alert.alert('Uyarı', 'Yorum boş olamaz.');
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        let response;
+        if (routeId) {
+          response = await axios.get(`${BASE_URL}/routes/${routeId}`);
+        } else if (postId) {
+          response = await axios.get(`${BASE_URL}/posts/${postId}`);
         }
+        setPost(response.data);
+      } catch (error) {
+        console.error("Error fetching post details:", error);
+      }
     };
 
-    const handleFavorite = () => {
-        setIsFavorite(!isFavorite);
-        Alert.alert(
-            'Favori Durumu',
-            isFavorite ? 'Favorilerden çıkarıldı' : 'Favorilere eklendi'
-        );
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/comments/${routeId || postId}`);
+        setComments(response.data);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
     };
 
-    if (!post) {
-        return (
-            <View style={styles.loadingContainer}>
-                <Text>Yükleniyor...</Text>
-            </View>
-        );
+    const getUserIdAndName = async () => {
+      const id = await AsyncStorage.getItem('userId');
+      setUserId(id);
+
+      const response = await axios.get(`${BASE_URL}/auth/get-user`, {
+        headers: { userid: id }
+      });
+      setUserName(response.data.name);
+    };
+
+    fetchPost();
+    fetchComments();
+    getUserIdAndName();
+  }, [routeId, postId]);
+
+  const handleFollowRoute = () => {
+    navigation.navigate('Map');
+  };
+
+  const handleComment = async () => {
+    if (newComment.trim() !== '') {
+      try {
+        const commentData = {
+          route: routeId || postId,
+          user: userId,
+          text: newComment
+        };
+        const response = await axios.post(`${BASE_URL}/comments`, commentData);
+        setComments([...comments, { ...response.data, user: { _id: userId, name: userName } }]);
+        setNewComment('');
+      } catch (error) {
+        console.error('Error posting comment', error);
+        Alert.alert('Error', 'Yorum gönderilemedi. Lütfen tekrar deneyin.');
+      }
+    } else {
+      Alert.alert('Uyarı', 'Yorum boş olamaz.');
     }
+  };
 
-    return (
-        <ScrollView style={styles.container}>
-            {post.images && post.images.length > 0 ? (
-                post.images.map((image, index) => (
-                    <Image key={index} source={{ uri: image }} style={styles.image} />
-                ))
-            ) : (
-                <View style={styles.mapErrorContainer}>
-                    <Text style={styles.mapErrorText}>Harita yüklenmedi</Text>
-                </View>
-            )}
-            <View style={styles.contentContainer}>
-                <Button mode="contained" onPress={handleFollowRoute} style={styles.followButton}>
-                    Rotayı Takip Et
-                </Button>
-                <View style={styles.tagsContainer}>
-                    {post.tags && post.tags.map((tag, index) => (
-                        <Text key={index} style={styles.tag}>
-                            {tag}
-                        </Text>
-                    ))}
-                </View>
-                <Text style={styles.title}>{post.routeName || post.title}</Text>
-                <Text style={styles.date}>{post.date}</Text>
-                <View style={styles.detailsContainer}>
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailTitle}>Mesafe</Text>
-                        <Text style={styles.detailValue}>{post.distance}</Text>
-                    </View>
-                    <View style={styles.divider} />
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailTitle}>Zorluk</Text>
-                        <Text style={styles.detailValue}>{post.difficulty}</Text>
-                    </View>
-                    <View style={styles.divider} />
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailTitle}>Toplam Süre</Text>
-                        <Text style={styles.detailValue}>{post.duration}</Text>
-                    </View>
-                    <View style={styles.divider} />
-                    <View style={styles.detailItem}>
-                        <Text style={styles.detailTitle}>Rota Türü</Text>
-                        <Text style={styles.detailValue}>{post.routeType}</Text>
-                    </View>
-                </View>
-                <Text style={styles.description}>{post.description}</Text>
-                <View style={styles.actionsContainer}>
-                    <View style={styles.iconButtonContainer}>
-                        <IconButton
-                            icon="comment"
-                            color="white"
-                            size={24}
-                            style={styles.iconButton}
-                            onPress={handleComment}
-                        />
-                        <Text style={styles.iconLabel}>Yorum Yap</Text>
-                    </View>
-                    <View style={styles.iconButtonContainer}>
-                        <IconButton
-                            icon="heart"
-                            color={isFavorite ? 'red' : 'white'}
-                            size={24}
-                            style={styles.iconButton}
-                            onPress={handleFavorite}
-                        />
-                        <Text style={styles.iconLabel}>Favori</Text>
-                    </View>
-                </View>
-                <Card style={styles.card}>
-                    <Card.Title title="Yorumlar ve Değerlendirmeler" />
-                    <Card.Content>
-                        {comments.length === 0 ? (
-                            <Text>Henüz yorum yapılmamış. İlk yorumu siz yapın!</Text>
-                        ) : (
-                            comments.map((comment, index) => (
-                                <View key={index} style={styles.comment}>
-                                    <Text style={styles.commentUser}>{comment.user.name}</Text>
-                                    <Text>{comment.text}</Text>
-                                    <Text style={styles.commentDate}>
-                                        {new Date(comment.date).toLocaleDateString()}{' '}
-                                        {new Date(comment.date).toLocaleTimeString()}
-                                    </Text>
-                                </View>
-                            ))
-                        )}
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Yorumunuzu yazın..."
-                            value={newComment}
-                            onChangeText={(text) => setNewComment(text)}
-                        />
-                        <Button mode="contained" onPress={handleComment} style={styles.submitButton}>
-                            Yorum Gönder
-                        </Button>
-                    </Card.Content>
-                </Card>
-            </View>
-        </ScrollView>
+  const handleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    Alert.alert(
+      'Favori Durumu',
+      isFavorite ? 'Favorilerden çıkarıldı' : 'Favorilere eklendi'
     );
+  };
+
+  if (!post) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Yükleniyor...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      {post.images && post.images.length > 0 ? (
+        post.images.map((image, index) => (
+          <Image key={index} source={{ uri: image }} style={styles.image} />
+        ))
+      ) : (
+        <View style={styles.mapErrorContainer}>
+          <Text style={styles.mapErrorText}>Harita yüklenmedi</Text>
+        </View>
+      )}
+      <View style={styles.contentContainer}>
+        <Button mode="contained" onPress={handleFollowRoute} style={styles.followButton}>
+          Rotayı Takip Et
+        </Button>
+        <View style={styles.tagsContainer}>
+          {post.tags && post.tags.map((tag, index) => (
+            <Text key={index} style={styles.tag}>
+              {tag}
+            </Text>
+          ))}
+        </View>
+        <Text style={styles.title}>{post.routeName || post.title}</Text>
+        <Text style={styles.date}>{post.date}</Text>
+        <View style={styles.detailsContainer}>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailTitle}>Mesafe</Text>
+            <Text style={styles.detailValue}>{post.distance}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.detailItem}>
+            <Text style={styles.detailTitle}>Zorluk</Text>
+            <Text style={styles.detailValue}>{post.difficulty}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.detailItem}>
+            <Text style={styles.detailTitle}>Toplam Süre</Text>
+            <Text style={styles.detailValue}>{post.duration}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.detailItem}>
+            <Text style={styles.detailTitle}>Rota Türü</Text>
+            <Text style={styles.detailValue}>{post.routeType}</Text>
+          </View>
+        </View>
+        <Text style={styles.description}>{post.description}</Text>
+        <View style={styles.actionsContainer}>
+          <View style={styles.iconButtonContainer}>
+            <IconButton
+              icon="comment"
+              color="white"
+              size={24}
+              style={styles.iconButton}
+              onPress={handleComment}
+            />
+            <Text style={styles.iconLabel}>Yorum Yap</Text>
+          </View>
+          <View style={styles.iconButtonContainer}>
+            <IconButton
+              icon="heart"
+              color={isFavorite ? 'red' : 'white'}
+              size={24}
+              style={styles.iconButton}
+              onPress={handleFavorite}
+            />
+            <Text style={styles.iconLabel}>Favori</Text>
+          </View>
+        </View>
+        <Card style={styles.card}>
+          <Card.Title title="Yorumlar ve Değerlendirmeler" />
+          <Card.Content>
+            {comments.length === 0 ? (
+              <Text>Henüz yorum yapılmamış. İlk yorumu siz yapın!</Text>
+            ) : (
+              comments.map((comment, index) => (
+                <View key={index} style={styles.comment}>
+                  <Text style={styles.commentUser}>{comment.user.name}</Text>
+                  <Text>{comment.text}</Text>
+                  <Text style={styles.commentDate}>
+                    {new Date(comment.date).toLocaleDateString()}{' '}
+                    {new Date(comment.date).toLocaleTimeString()}
+                  </Text>
+                </View>
+              ))
+            )}
+            <TextInput
+              style={styles.input}
+              placeholder="Yorumunuzu yazın..."
+              value={newComment}
+              onChangeText={(text) => setNewComment(text)}
+            />
+            <Button mode="contained" onPress={handleComment} style={styles.submitButton}>
+              Yorum Gönder
+            </Button>
+          </Card.Content>
+        </Card>
+      </View>
+    </ScrollView>
+  );
 };
 
 const styles = StyleSheet.create({
