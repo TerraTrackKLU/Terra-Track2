@@ -269,7 +269,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const PostDetail = () => {
     const navigation = useNavigation();
     const route = useRoute();
-    const { routeId } = route.params;
+    const { routeId, postId } = route.params;
 
     const [post, setPost] = useState(null);
     const [isFavorite, setIsFavorite] = useState(false);
@@ -280,7 +280,12 @@ const PostDetail = () => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await axios.get(`${BASE_URL}/routes/${routeId}`);
+                let response;
+                if (routeId) {
+                    response = await axios.get(`${BASE_URL}/routes/${routeId}`);
+                } else if (postId) {
+                    response = await axios.get(`${BASE_URL}/posts/${postId}`);
+                }
                 setPost(response.data);
             } catch (error) {
                 console.error("Error fetching post details:", error);
@@ -289,7 +294,7 @@ const PostDetail = () => {
 
         const fetchComments = async () => {
             try {
-                const response = await axios.get(`${BASE_URL}/comments/${routeId}`);
+                const response = await axios.get(`${BASE_URL}/comments/${routeId || postId}`);
                 setComments(response.data);
             } catch (error) {
                 console.error("Error fetching comments:", error);
@@ -304,7 +309,7 @@ const PostDetail = () => {
         fetchPost();
         fetchComments();
         getUserId();
-    }, [routeId]);
+    }, [routeId, postId]);
 
     const handleFollowRoute = () => {
         navigation.navigate('Map'); // 'Map' sayfasına yönlendirir
@@ -314,7 +319,7 @@ const PostDetail = () => {
         if (newComment.trim() !== '') {
             try {
                 await axios.post(`${BASE_URL}/comments`, {
-                    route: routeId,
+                    route: routeId || postId,
                     user: userId,
                     text: newComment
                 });
@@ -367,7 +372,7 @@ const PostDetail = () => {
                         </Text>
                     ))}
                 </View>
-                <Text style={styles.title}>{post.routeName}</Text>
+                <Text style={styles.title}>{post.routeName || post.title}</Text>
                 <Text style={styles.date}>{post.date}</Text>
                 <View style={styles.detailsContainer}>
                     <View style={styles.detailItem}>
@@ -447,135 +452,135 @@ const PostDetail = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f8f9fa',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    contentContainer: {
-        padding: 20,
-    },
-    followButton: {
-        marginBottom: 20,
-        backgroundColor: '#6200ee',
-    },
-    tagsContainer: {
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    tag: {
-        backgroundColor: '#03dac6',
-        color: 'white',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 20,
-        marginRight: 10,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 10,
-    },
-    date: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 20,
-    },
-    detailsContainer: {
-        marginBottom: 20,
-    },
-    detailItem: {
-        marginBottom: 10,
-    },
-    detailTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    detailValue: {
-        fontSize: 16,
-        color: '#666',
-    },
-    divider: {
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1,
-        marginVertical: 10,
-    },
-    description: {
-        fontSize: 16,
-        color: '#333',
-        marginBottom: 20,
-    },
-    actionsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 20,
-    },
-    iconButtonContainer: {
-        alignItems: 'center',
-    },
-    iconButton: {
-        backgroundColor: '#6200ee',
-        borderRadius: 50,
-    },
-    iconLabel: {
-        color: '#333',
-        fontSize: 14,
-        marginTop: 5,
-    },
-    image: {
-        width: '100%',
-        height: 200,
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    mapErrorContainer: {
-        width: '100%',
-        height: 200,
-        borderRadius: 10,
-        marginBottom: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#e0e0e0',
-    },
-    mapErrorText: {
-        fontSize: 16,
-        color: '#666',
-    },
-    card: {
-        marginTop: 20,
-        borderRadius: 10,
-    },
-    comment: {
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1,
-        paddingBottom: 10,
-        marginBottom: 10,
-    },
-    commentUser: {
-        fontWeight: 'bold',
-        marginBottom: 2,
-    },
-    commentDate: {
-        fontSize: 12,
-        color: '#666',
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 10,
-        marginTop: 10,
-    },
-    submitButton: {
-        marginTop: 10,
-        backgroundColor: '#6200ee',
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contentContainer: {
+    padding: 20,
+  },
+  followButton: {
+    marginBottom: 20,
+    backgroundColor: '#6200ee',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  tag: {
+    backgroundColor: '#03dac6',
+    color: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  date: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+  },
+  detailsContainer: {
+    marginBottom: 20,
+  },
+  detailItem: {
+    marginBottom: 10,
+  },
+  detailTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  detailValue: {
+    fontSize: 16,
+    color: '#666',
+  },
+  divider: {
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+    marginVertical: 10,
+  },
+  description: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 20,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  iconButtonContainer: {
+    alignItems: 'center',
+  },
+  iconButton: {
+    backgroundColor: '#6200ee',
+    borderRadius: 50,
+  },
+  iconLabel: {
+    color: '#333',
+    fontSize: 14,
+    marginTop: 5,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  mapErrorContainer: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+  },
+  mapErrorText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  card: {
+    marginTop: 20,
+    borderRadius: 10,
+  },
+  comment: {
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+    paddingBottom: 10,
+    marginBottom: 10,
+  },
+  commentUser: {
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  commentDate: {
+    fontSize: 12,
+    color: '#666',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 10,
+  },
+  submitButton: {
+    marginTop: 10,
+    backgroundColor: '#6200ee',
+  },
 });
 
 export default PostDetail;

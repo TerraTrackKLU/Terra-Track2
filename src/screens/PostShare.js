@@ -19,6 +19,7 @@ const PostShare = ({ navigation }) => {
   const [images, setImages] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
   const [tag, setTag] = useState("");
+  const [routeId, setRouteId] = useState(""); // Add this state
 
   const user = useSelector((state) => state.user.user);
   const route = useRoute();
@@ -31,13 +32,14 @@ const PostShare = ({ navigation }) => {
     }
 
     if (route.params && route.params.route) {
-      const { routeName, distance, difficulty, duration, routeType, description } = route.params.route;
+      const { routeName, distance, difficulty, duration, routeType, description, _id } = route.params.route;
       setTitle(routeName);
       setDistance(distance);
       setDifficulty(difficulty);
       setDuration(duration);
       setRouteType(routeType);
       setDescription(description);
+      setRouteId(_id); // Set the routeId
     }
   }, [user, route.params]);
 
@@ -58,8 +60,9 @@ const PostShare = ({ navigation }) => {
       description,
       images,
       tags: selectedTags,
-      userId: user._id, // Kullanıcı kimliği
-      date, // Tarih bilgisi
+      userId: user._id,
+      date,
+      routeId, // Include the routeId in the post data
     };
 
     try {
