@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "rea
 import axios from "axios";
 import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { POST_HOMEPAGE } from "../constants/links";
+import { BASE_URL } from "../constants/links"; // BASE_URL'i burada kullanacağız
 
 const MyPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -12,22 +12,22 @@ const MyPosts = ({ navigation }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(POST_HOMEPAGE);
-       //console.log('API Response:', response.data); // API yanıtını konsola loglayın
-        setPosts(response.data);
+        if (user && user._id) {
+          const response = await axios.get(`${BASE_URL}/posts/user/${user._id}`);
+          setPosts(response.data);
+        } else {
+          console.error("User ID bulunamadı");
+        }
       } catch (error) {
         console.error('Error fetching posts:', error); // Hata durumunu loglayın
       }
     };
 
     fetchPosts();
-  }, []);
+  }, [user]);
 
   return (
     <View style={styles.container}>
-      
-      
-
       <ScrollView>
         {posts.map((post) => (
           <Card key={post._id} style={styles.card}>

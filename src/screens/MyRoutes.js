@@ -25,11 +25,15 @@ const MyRoutes = ({ navigation }) => {
     fetchRoutes();
   }, []);
 
+  const handlePostShare = (route) => {
+    navigation.navigate('PostShare', { route });
+  };
+
   return (
     <ScrollView style={styles.container}>
       {routes.map((item) => (
-        <TouchableOpacity key={item._id} onPress={() => navigation.navigate('PostDetail', { routeId: item._id })}>
-          <View style={styles.card}>
+        <View key={item._id} style={styles.card}>
+          <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { routeId: item._id })}>
             <View style={styles.cardHeader}>
               <Text style={styles.routeName}>{item.routeName}</Text>
               <Text style={styles.activityType}>{item.activityType}</Text>
@@ -49,15 +53,14 @@ const MyRoutes = ({ navigation }) => {
                 <Text style={styles.detailValue}>{item.laps}</Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={styles.owner}
-              onPress={() => navigation.navigate('Profile', { profileId: item.owner._id })}
-            >
-              <Image source={{ uri: item.owner.profilePic }} style={styles.profilePic} />
-              <Text style={styles.ownerName}>{item.owner.name}</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.postButton}
+            onPress={() => handlePostShare(item)}
+          >
+            <Text style={styles.postButtonText}>Post Paylaş</Text>
+          </TouchableOpacity>
+        </View>
       ))}
     </ScrollView>
   );
@@ -116,20 +119,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  owner: {
-    flexDirection: 'row',
+  postButton: {
+    backgroundColor: '#6200ee',
+    padding: 10,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
   },
-  ownerName: {
-    color: '#333',
+  postButtonText: {
+    color: '#fff',
     fontSize: 16,
-  },
-  profilePic: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    fontWeight: 'bold',
   },
 });
 
