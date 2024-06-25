@@ -264,6 +264,7 @@ import { Button, IconButton, Card } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { BASE_URL } from '../constants/links';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PostDetail = () => {
     const navigation = useNavigation();
@@ -274,6 +275,7 @@ const PostDetail = () => {
     const [isFavorite, setIsFavorite] = useState(false);
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
+    const [userId, setUserId] = useState(null);
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -285,17 +287,43 @@ const PostDetail = () => {
             }
         };
 
+        const fetchComments = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}/comments/${routeId}`);
+                setComments(response.data);
+            } catch (error) {
+                console.error("Error fetching comments:", error);
+            }
+        };
+
+        const getUserId = async () => {
+            const id = await AsyncStorage.getItem('userId');
+            setUserId(id);
+        };
+
         fetchPost();
+        fetchComments();
+        getUserId();
     }, [routeId]);
 
     const handleFollowRoute = () => {
         navigation.navigate('Map'); // 'Map' sayfasına yönlendirir
     };
 
-    const handleComment = () => {
+    const handleComment = async () => {
         if (newComment.trim() !== '') {
-            setComments([...comments, { text: newComment, date: new Date() }]);
-            setNewComment('');
+            try {
+                await axios.post(`${BASE_URL}/comments`, {
+                    route: routeId,
+                    user: userId,
+                    text: newComment
+                });
+                setComments([...comments, { text: newComment, date: new Date(), user: { _id: userId, name: 'Your Name' } }]);
+                setNewComment('');
+            } catch (error) {
+                console.error('Error posting comment', error);
+                Alert.alert('Error', 'Yorum gönderilemedi. Lütfen tekrar deneyin.');
+            }
         } else {
             Alert.alert('Uyarı', 'Yorum boş olamaz.');
         }
@@ -393,10 +421,11 @@ const PostDetail = () => {
                         ) : (
                             comments.map((comment, index) => (
                                 <View key={index} style={styles.comment}>
+                                    <Text style={styles.commentUser}>{comment.user.name}</Text>
                                     <Text>{comment.text}</Text>
                                     <Text style={styles.commentDate}>
-                                        {comment.date.toLocaleDateString()}{' '}
-                                        {comment.date.toLocaleTimeString()}
+                                        {new Date(comment.date).toLocaleDateString()}{' '}
+                                        {new Date(comment.date).toLocaleTimeString()}
                                     </Text>
                                 </View>
                             ))
@@ -527,6 +556,10 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         paddingBottom: 10,
         marginBottom: 10,
+    },
+    commentUser: {
+        fontWeight: 'bold',
+        marginBottom: 2,
     },
     commentDate: {
         fontSize: 12,
