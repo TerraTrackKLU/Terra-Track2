@@ -109,9 +109,7 @@ const HomePage = ({ navigation }) => {
           <Text style={styles.logoText}>Track</Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.postButton} onPress={() => navigation.navigate("PostShare")}>
-        <Text style={styles.postButtonText}>Post Paylaş</Text>
-      </TouchableOpacity>
+     
 
       <ScrollView
         refreshControl={
