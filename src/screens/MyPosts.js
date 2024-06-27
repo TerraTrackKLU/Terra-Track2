@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "rea
 import axios from "axios";
 import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { BASE_URL } from "../constants/links"; // BASE_URL'i burada kullanacağız
+import { BASE_URL, LIKE_POST, UNLIKE_POST } from "../constants/links";
 
 const MyPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -14,17 +14,59 @@ const MyPosts = ({ navigation }) => {
       try {
         if (user && user._id) {
           const response = await axios.get(`${BASE_URL}/posts/user/${user._id}`);
-          setPosts(response.data);
+          const updatedPosts = response.data.map(post => ({
+            ...post,
+            likes: Array.isArray(post.likes) ? post.likes : [],
+          })).sort((a, b) => new Date(b.date) - new Date(a.date)); // Tarihe göre sıralama
+          setPosts(updatedPosts);
         } else {
           console.error("User ID bulunamadı");
         }
       } catch (error) {
-        console.error('Error fetching posts:', error); // Hata durumunu loglayın
+        console.error('Error fetching posts:', error);
       }
     };
 
     fetchPosts();
   }, [user]);
+
+  const handleLike = async (postId) => {
+    const postIndex = posts.findIndex(post => post._id === postId);
+    const post = posts[postIndex];
+    const isLiked = post.likes.includes(user._id);
+
+    // Optimistik UI güncellemesi
+    const updatedPosts = [...posts];
+    if (isLiked) {
+      updatedPosts[postIndex] = {
+        ...post,
+        likes: post.likes.filter(id => id !== user._id),
+      };
+    } else {
+      updatedPosts[postIndex] = {
+        ...post,
+        likes: [...post.likes, user._id],
+      };
+    }
+    setPosts(updatedPosts);
+
+    try {
+      if (isLiked) {
+        await axios.post(UNLIKE_POST + postId, { userId: user._id });
+      } else {
+        await axios.post(LIKE_POST + postId, { userId: user._id });
+      }
+    } catch (error) {
+      console.error('Error liking/unliking post:', error);
+
+      // Hata durumunda UI güncellemesini geri al
+      setPosts(posts);
+    }
+  };
+
+  const handleComment = (postId) => {
+    navigation.navigate('PostDetail', { postId, focusComment: true });
+  };
 
   return (
     <View style={styles.container}>
@@ -42,8 +84,14 @@ const MyPosts = ({ navigation }) => {
               <Text style={styles.caption}>{post.description}</Text>
             </Card.Content>
             <Card.Actions>
-              <PaperButton icon="heart-outline" onPress={() => { }}>Like</PaperButton>
-              <PaperButton icon="comment-outline" onPress={() => { }}>Comment</PaperButton>
+              <PaperButton 
+                icon={post.likes.includes(user._id) ? "heart" : "heart-outline"} 
+                color={post.likes.includes(user._id) ? "red" : undefined} 
+                onPress={() => handleLike(post._id)}
+              >
+                Like {post.likes.length}
+              </PaperButton>
+              <PaperButton icon="comment-outline" onPress={() => handleComment(post._id)}>Comment</PaperButton>
             </Card.Actions>
           </Card>
         ))}

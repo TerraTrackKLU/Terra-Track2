@@ -1,42 +1,48 @@
-
-
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from "react-native";
 import axios from "axios";
-import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
+import { Appbar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { LIKE_POST, POST_HOMEPAGE, UNLIKE_POST } from "../constants/links";
 
 const HomePage = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const user = useSelector((state) => state.user.user);
-  const [loading, setLoading] = useState(true); // Loading state ekledik
+  const [loading, setLoading] = useState(true); 
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get(POST_HOMEPAGE);
-        const updatedPosts = response.data.map(post => ({
-          ...post,
-          likes: Array.isArray(post.likes) ? post.likes : [], // likes alanı yoksa boş bir dizi oluştur
-        }));
-        setPosts(updatedPosts);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      } finally {
-        setLoading(false); // Veriler çekildikten sonra loading state'i false yapıyoruz
-      }
-    };
-
     fetchPosts();
   }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await axios.get(POST_HOMEPAGE);
+      const updatedPosts = response.data.map(post => ({
+        ...post,
+        likes: Array.isArray(post.likes) ? post.likes : [],
+      }));
+      // Postları yüklenme tarihine göre azalan sırayla (en son paylaşılan en üstte) sıralayın
+      updatedPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setPosts(updatedPosts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchPosts();
+  };
 
   const handleLike = async (postId) => {
     const postIndex = posts.findIndex(post => post._id === postId);
     const post = posts[postIndex];
     const isLiked = post.likes.includes(user._id);
 
-    // Optimistik UI güncellemesi
     const updatedPosts = [...posts];
     if (isLiked) {
       updatedPosts[postIndex] = {
@@ -60,7 +66,6 @@ const HomePage = ({ navigation }) => {
     } catch (error) {
       console.error('Error liking/unliking post:', error);
 
-      // Hata durumunda UI güncellemesini geri al
       setPosts(posts);
     }
   };
@@ -92,7 +97,11 @@ const HomePage = ({ navigation }) => {
         <Text style={styles.postButtonText}>Post Paylaş</Text>
       </TouchableOpacity>
 
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {posts.map((post) => (
           <Card key={post._id} style={styles.card}>
             <Card.Title
@@ -180,4 +189,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomePage;
-
