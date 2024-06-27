@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from "react-native";
 import axios from "axios";
-import { Appbar, Card, Button as PaperButton } from "react-native-paper";
+import { Appbar, Card, Button as PaperButton, Avatar } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { LIKE_POST, POST_HOMEPAGE, UNLIKE_POST } from "../constants/links";
+import { LIKE_POST, POST_HOMEPAGE, UNLIKE_POST, BASE_URL } from "../constants/links";
 
 const HomePage = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState({});
   const user = useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(true); 
   const [refreshing, setRefreshing] = useState(false);
@@ -25,11 +26,26 @@ const HomePage = ({ navigation }) => {
       // Postları yüklenme tarihine göre azalan sırayla (en son paylaşılan en üstte) sıralayın
       updatedPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
       setPosts(updatedPosts);
+      fetchUsers(updatedPosts); // Kullanıcı verilerini çekmek için çağır
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const fetchUsers = async (posts) => {
+    const userIds = [...new Set(posts.map(post => post.userId))]; // Postlardan kullanıcı ID'lerini topla ve benzersiz olanları al
+    try {
+      const userResponses = await Promise.all(userIds.map(id => axios.get(`${BASE_URL}/auth/get-user`, { headers: { userid: id } })));
+      const userMap = userResponses.reduce((map, response) => {
+        map[response.data._id] = response.data;
+        return map;
+      }, {});
+      setUsers(userMap);
+    } catch (error) {
+      console.error('Error fetching users:', error);
     }
   };
 
@@ -102,30 +118,38 @@ const HomePage = ({ navigation }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {posts.map((post) => (
-          <Card key={post._id} style={styles.card}>
-            <Card.Title
-              title={post.title}
-              subtitle={post.routeType}
-            />
-            <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
-              <Card.Cover source={{ uri: post.images[0] }} />
-            </TouchableOpacity>
-            <Card.Content>
-              <Text style={styles.caption}>{post.description}</Text>
-            </Card.Content>
-            <Card.Actions>
-              <PaperButton 
-                icon={post.likes.includes(user._id) ? "heart" : "heart-outline"} 
-                color={post.likes.includes(user._id) ? "red" : undefined} 
-                onPress={() => handleLike(post._id)}
-              >
-                Like {post.likes.length}
-              </PaperButton>
-              <PaperButton icon="comment-outline" onPress={() => { }}>Comment</PaperButton>
-            </Card.Actions>
-          </Card>
-        ))}
+        {posts.map((post) => {
+          const postUser = users[post.userId];
+          return (
+            <Card key={post._id} style={styles.card}>
+              <View style={styles.cardHeader}>
+                {postUser && (
+                  <View style={styles.userInfo}>
+                    <Avatar.Image size={40} source={{ uri: postUser.profilePic }} />
+                    <Text style={styles.userName}>{postUser.name}</Text>
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
+                <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
+              </TouchableOpacity>
+              <Card.Content>
+                <Text style={styles.title}>{post.title}</Text>
+                <Text style={styles.caption}>{post.description}</Text>
+              </Card.Content>
+              <Card.Actions style={styles.cardActions}>
+                <PaperButton 
+                  icon={post.likes.includes(user._id) ? "heart" : "heart-outline"} 
+                  color={post.likes.includes(user._id) ? "red" : undefined} 
+                  onPress={() => handleLike(post._id)}
+                >
+                  Like {post.likes.length}
+                </PaperButton>
+                <PaperButton icon="comment-outline" onPress={() => { }}>Comment</PaperButton>
+              </Card.Actions>
+            </Card>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -150,8 +174,39 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 8,
   },
-  caption: {
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userName: {
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  postImage: {
     marginTop: 10,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 10,
+  },
+  caption: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 10,
+  },
+  cardActions: {
+    justifyContent: 'space-between',
   },
   logo: {
     width: 40,
