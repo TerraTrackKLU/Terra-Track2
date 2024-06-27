@@ -55,6 +55,11 @@ const EditProfile = ({ navigation }) => {
   }, [user]);
 
   const handleSaveChanges = async () => {
+    if (newPassword !== confirmNewPassword) {
+      Alert.alert("Hata", "Yeni şifreler eşleşmiyor.");
+      return;
+    }
+
     try {
       const updatedUser = {
         name,
@@ -62,8 +67,7 @@ const EditProfile = ({ navigation }) => {
         nickname,
         about,
         currentPassword,
-        newPassword:
-          newPassword === confirmNewPassword ? newPassword : undefined,
+        newPassword,
         profilePic,
       };
 
@@ -74,6 +78,11 @@ const EditProfile = ({ navigation }) => {
           userid: user._id,
         },
       });
+
+      if (response.data.error) {
+        Alert.alert("Hata", response.data.error);
+        return;
+      }
 
       const updatedUserData = {
         ...user,
@@ -92,7 +101,7 @@ const EditProfile = ({ navigation }) => {
         "Error:",
         error.response ? error.response.data : error.message
       );
-      Alert.alert("Hata", "Değişiklikler kaydedilirken bir hata oluştu.");
+      Alert.alert("Hata", "Mevcut şifre yanlış!!");
     }
   };
 
