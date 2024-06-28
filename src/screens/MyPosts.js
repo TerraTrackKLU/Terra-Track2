@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Alert } from "react-native";
 import axios from "axios";
-import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
+import { Avatar, Card, Button as PaperButton, IconButton } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { BASE_URL, LIKE_POST, UNLIKE_POST } from "../constants/links";
 import LikeButton from "../components/LikeButton";
@@ -196,6 +196,17 @@ const MyPosts = ({ navigation }) => {
                     <Text style={styles.userName}>{postUser.name}</Text>
                   </View>
                 )}
+                <View style={styles.buttonContainer}>
+                  <IconButton
+                    icon="pencil"
+                    onPress={() => handleUpdatePost(post._id)}
+                  />
+                  <IconButton
+                    icon="delete"
+                    onPress={() => handleDeletePost(post._id)}
+                    color="red"
+                  />
+                </View>
               </View>
               <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
                 <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
@@ -215,19 +226,6 @@ const MyPosts = ({ navigation }) => {
                   onPress={() => handleFavorite(post._id)}
                 >
                   {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
-                </PaperButton>
-                <PaperButton
-                  icon="delete"
-                  onPress={() => handleDeletePost(post._id)}
-                  color="red"
-                >
-                  Sil
-                </PaperButton>
-                <PaperButton
-                  icon="pencil"
-                  onPress={() => handleUpdatePost(post._id)}
-                >
-                  Güncelle
                 </PaperButton>
               </Card.Actions>
             </Card>
@@ -260,6 +258,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
@@ -274,8 +273,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+  },
   postImage: {
     marginTop: 10,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
   title: {
     fontSize: 20,
