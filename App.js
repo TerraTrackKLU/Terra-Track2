@@ -17,9 +17,10 @@ import SplashScreen from "./src/screens/SplashScreen";
 import PostShare from "./src/screens/PostShare";
 import MyPosts from "./src/screens/MyPosts";
 import SaveRoute from "./src/screens/SaveRoute";
-import UserProfile from "./src/screens/UserProfile"; // Make sure the path is correct
+import UserProfile from "./src/screens/UserProfile";
 import RouteDetail from "./src/screens/RouteDetail";
 import PostUpdate from "./src/screens/PostUpdate";
+import { Provider as PaperProvider } from 'react-native-paper';
 
 const Stack = createNativeStackNavigator();
 
@@ -71,7 +72,6 @@ function App() {
         <Stack.Screen name="MyPosts" component={MyPosts} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
         <Stack.Screen name="PostUpdate" component={PostUpdate} />
-        {/* Make sure this is correctly placed */}
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -79,7 +79,9 @@ function App() {
 
 const AppProvider = () => (
   <Provider store={store}>
-    <App />
+    <PaperProvider>
+      <App />
+    </PaperProvider>
   </Provider>
 );
 
