@@ -18,7 +18,7 @@ import {
   UNLIKE_POST,
   BASE_URL,
 } from "../constants/links";
-import LikeButton from "../components/LikeButton"; // Yeni bileşeni içe aktar
+import LikeButton from "../components/LikeButton";
 
 const HomePage = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -134,13 +134,20 @@ const HomePage = ({ navigation }) => {
             <Card key={post._id} style={styles.card}>
               <View style={styles.cardHeader}>
                 {postUser && (
-                  <View style={styles.userInfo}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("UserProfile", {
+                        userId: post.userId,
+                      })
+                    }
+                    style={styles.userInfo}
+                  >
                     <Avatar.Image
                       size={40}
                       source={{ uri: postUser.profilePic }}
                     />
                     <Text style={styles.userName}>{postUser.name}</Text>
-                  </View>
+                  </TouchableOpacity>
                 )}
               </View>
               <TouchableOpacity
@@ -250,7 +257,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
-    marginTop: 25, // Üstten boşluk ekle
   },
   header: {
     alignItems: "center",
