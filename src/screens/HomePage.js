@@ -10,7 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import axios from "axios";
-import { Card, Avatar } from "react-native-paper";
+import { Card, Avatar, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
 import {
   LIKE_POST,
@@ -179,9 +179,6 @@ const HomePage = ({ navigation }) => {
                   onPress={() => handleLike(post._id)}
                   likeCount={post.likes.length}
                 />
-               <PaperButton>
-                  Like {post.likes.length}
-                </PaperButton>
                 <PaperButton icon="bookmark-outline" onPress={() => addToFavorites(post._id)}>Favorite</PaperButton>
               </Card.Actions>
             </Card>
