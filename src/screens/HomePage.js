@@ -26,9 +26,11 @@ const HomePage = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     fetchPosts();
+    fetchFavorites();
   }, []);
 
   const fetchPosts = async () => {
@@ -49,9 +51,17 @@ const HomePage = ({ navigation }) => {
     }
   };
 
-  const fetchUsers = async (posts) => {
+  const fetchFavorites = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/favorites/${user._id}`);
+      setFavorites(response.data);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  };
 
-    const userIds = [...new Set(posts.map(post => post.userId))];
+  const fetchUsers = async (posts) => {
+    const userIds = [...new Set(posts.map((post) => post.userId))];
     try {
       const userResponses = await Promise.all(
         userIds.map((id) =>
@@ -71,6 +81,7 @@ const HomePage = ({ navigation }) => {
   const onRefresh = () => {
     setRefreshing(true);
     fetchPosts();
+    fetchFavorites();
   };
 
   const handleLike = async (postId) => {
@@ -104,13 +115,24 @@ const HomePage = ({ navigation }) => {
     }
   };
 
-  const addToFavorites = async (postId) => {
+  const handleFavorite = async (postId) => {
+    const isFavorite = favorites.some((fav) => fav._id === postId);
+
     try {
-      await axios.post(`${BASE_URL}/favorites`, { userId: user._id, postId: postId });
-      console.log('Post favorilere eklendi.');
-      alert('Favorilere eklendi!');
+      if (isFavorite) {
+        await axios.delete(`${BASE_URL}/favorites/${user._id}/${postId}`);
+        setFavorites(favorites.filter((fav) => fav._id !== postId));
+        alert("Favorilerden çıkarıldı!");
+      } else {
+        await axios.post(`${BASE_URL}/favorites`, {
+          userId: user._id,
+          postId: postId,
+        });
+        setFavorites([...favorites, { _id: postId }]);
+        alert("Favorilere eklendi!");
+      }
     } catch (error) {
-      console.error('Error adding to favorites:', error);
+      console.error("Error updating favorites:", error);
     }
   };
 
@@ -139,6 +161,7 @@ const HomePage = ({ navigation }) => {
       >
         {posts.map((post) => {
           const postUser = users[post.userId];
+          const isFavorite = favorites.some((fav) => fav._id === post._id);
           return (
             <Card key={post._id} style={styles.card}>
               <View style={styles.cardHeader}>
@@ -179,7 +202,12 @@ const HomePage = ({ navigation }) => {
                   onPress={() => handleLike(post._id)}
                   likeCount={post.likes.length}
                 />
-                <PaperButton icon="bookmark-outline" onPress={() => addToFavorites(post._id)}>Favorite</PaperButton>
+                <PaperButton
+                  icon={isFavorite ? "bookmark-remove-outline" : "bookmark-outline"}
+                  onPress={() => handleFavorite(post._id)}
+                >
+                  {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                </PaperButton>
               </Card.Actions>
             </Card>
           );
