@@ -12,7 +12,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { GET_USER, UPDATE_USER } from "../constants/links";
+import { GET_USER, UPDATE_USER, BASE_URL } from "../constants/links";
 import { setUser } from "../redux/slices/userSlice";
 
 const EditProfile = ({ navigation }) => {
@@ -27,6 +27,7 @@ const EditProfile = ({ navigation }) => {
     "https://w7.pngwing.com/pngs/744/940/png-transparent-anonym-avatar-default-head-person-unknown-user-user-pictures-icon.png"
   );
 
+  const [nicknameExists, setNicknameExists] = useState(false); // Yeni state
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
 
@@ -54,9 +55,34 @@ const EditProfile = ({ navigation }) => {
     }
   }, [user]);
 
+  const checkNickname = async (nickname) => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/auth/check-nickname/${nickname}`,
+        {
+          params: { userId: user._id },
+        }
+      );
+      setNicknameExists(response.data.exists);
+    } catch (error) {
+      console.error("Error checking nickname:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (nickname) {
+      checkNickname(nickname);
+    }
+  }, [nickname]);
+
   const handleSaveChanges = async () => {
     if (newPassword !== confirmNewPassword) {
       Alert.alert("Hata", "Yeni şifreler eşleşmiyor.");
+      return;
+    }
+
+    if (nicknameExists) {
+      Alert.alert("Hata", "Bu kullanıcı adı zaten kullanımda.");
       return;
     }
 
@@ -156,6 +182,11 @@ const EditProfile = ({ navigation }) => {
             onChangeText={(text) => setNickname(text)}
             placeholder="Nickname"
           />
+          {nicknameExists && (
+            <Text style={styles.errorText}>
+              Bu kullanıcı adı zaten kullanımda.
+            </Text>
+          )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Hakkınızda</Text>
@@ -245,6 +276,10 @@ const styles = StyleSheet.create({
   },
   aboutInput: {
     height: 100,
+  },
+  errorText: {
+    color: "red",
+    marginTop: 5,
   },
   saveButton: {
     backgroundColor: "#6200ee",
