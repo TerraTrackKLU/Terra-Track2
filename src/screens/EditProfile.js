@@ -97,7 +97,7 @@ const EditProfile = ({ navigation }) => {
         profilePic,
       };
 
-      console.log("Updated User Data:", updatedUser);
+      //console.log("Updated User Data:", updatedUser);
 
       const response = await axios.put(UPDATE_USER, updatedUser, {
         headers: {
@@ -140,7 +140,16 @@ const EditProfile = ({ navigation }) => {
     });
 
     if (!result.canceled) {
-      setProfilePic(result.assets[0].uri);
+      const imageUri = result.assets[0].uri;
+
+      // Convert the image to base64 format
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePic(reader.result);
+      };
+      reader.readAsDataURL(blob);
     }
   };
 

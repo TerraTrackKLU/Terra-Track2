@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from "react-native";
 import axios from "axios";
 import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
@@ -7,35 +7,61 @@ import { BASE_URL, LIKE_POST, UNLIKE_POST } from "../constants/links";
 
 const MyPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState({});
   const user = useSelector((state) => state.user.user);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        if (user && user._id) {
-          const response = await axios.get(`${BASE_URL}/posts/user/${user._id}`);
-          const updatedPosts = response.data.map(post => ({
-            ...post,
-            likes: Array.isArray(post.likes) ? post.likes : [],
-          })).sort((a, b) => new Date(b.date) - new Date(a.date)); // Tarihe göre sıralama
-          setPosts(updatedPosts);
-        } else {
-          console.error("User ID bulunamadı");
-        }
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      }
-    };
-
     fetchPosts();
   }, [user]);
+
+  const fetchPosts = async () => {
+    if (!user || !user._id) {
+      console.error("User ID bulunamadı");
+      setLoading(false);
+      return;
+    }
+    try {
+      const response = await axios.get(`${BASE_URL}/posts/user/${user._id}`);
+      const updatedPosts = response.data.map(post => ({
+        ...post,
+        likes: Array.isArray(post.likes) ? post.likes : [],
+      })).sort((a, b) => new Date(b.date) - new Date(a.date)); // Tarihe göre sıralama
+      setPosts(updatedPosts);
+      fetchUsers(updatedPosts); // Kullanıcı verilerini çekmek için çağır
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const fetchUsers = async (posts) => {
+    const userIds = [...new Set(posts.map(post => post.userId))]; // Postlardan kullanıcı ID'lerini topla ve benzersiz olanları al
+    try {
+      const userResponses = await Promise.all(userIds.map(id => axios.get(`${BASE_URL}/auth/get-user`, { headers: { userid: id } })));
+      const userMap = userResponses.reduce((map, response) => {
+        map[response.data._id] = response.data;
+        return map;
+      }, {});
+      setUsers(userMap);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchPosts();
+  };
 
   const handleLike = async (postId) => {
     const postIndex = posts.findIndex(post => post._id === postId);
     const post = posts[postIndex];
     const isLiked = post.likes.includes(user._id);
 
-    // Optimistik UI güncellemesi
     const updatedPosts = [...posts];
     if (isLiked) {
       updatedPosts[postIndex] = {
@@ -59,42 +85,58 @@ const MyPosts = ({ navigation }) => {
     } catch (error) {
       console.error('Error liking/unliking post:', error);
 
-      // Hata durumunda UI güncellemesini geri al
       setPosts(posts);
     }
   };
 
-  const handleComment = (postId) => {
-    navigation.navigate('PostDetail', { postId, focusComment: true });
-  };
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#6200ee" />
+        <Text style={styles.loadingText}>Yükleniyor...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {posts.map((post) => (
-          <Card key={post._id} style={styles.card}>
-            <Card.Title
-              title={post.title}
-              subtitle={post.routeType}
-            />
-            <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
-              <Card.Cover source={{ uri: post.images[0] }} />
-            </TouchableOpacity>
-            <Card.Content>
-              <Text style={styles.caption}>{post.description}</Text>
-            </Card.Content>
-            <Card.Actions>
-              <PaperButton 
-                icon={post.likes.includes(user._id) ? "heart" : "heart-outline"} 
-                color={post.likes.includes(user._id) ? "red" : undefined} 
-                onPress={() => handleLike(post._id)}
-              >
-                Like {post.likes.length}
-              </PaperButton>
-              <PaperButton icon="comment-outline" onPress={() => handleComment(post._id)}>Comment</PaperButton>
-            </Card.Actions>
-          </Card>
-        ))}
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {posts.map((post) => {
+          const postUser = users[post.userId];
+          return (
+            <Card key={post._id} style={styles.card}>
+              <View style={styles.cardHeader}>
+                {postUser && (
+                  <View style={styles.userInfo}>
+                    <Avatar.Image size={40} source={{ uri: postUser.profilePic }} />
+                    <Text style={styles.userName}>{postUser.name}</Text>
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
+                <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
+              </TouchableOpacity>
+              <Card.Content>
+                <Text style={styles.title}>{post.title}</Text>
+                <Text style={styles.caption}>{post.description}</Text>
+              </Card.Content>
+              <Card.Actions style={styles.cardActions}>
+                <PaperButton 
+                  icon={post.likes.includes(user._id) ? "heart" : "heart-outline"} 
+                  color={post.likes.includes(user._id) ? "red" : undefined} 
+                  onPress={() => handleLike(post._id)}
+                >
+                  Like {post.likes.length}
+                </PaperButton>
+                <PaperButton icon="comment-outline" onPress={() => handleComment(post._id)}>Comment</PaperButton>
+              </Card.Actions>
+            </Card>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -105,15 +147,53 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8f9fa",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#6200ee',
+  },
   card: {
     margin: 10,
     borderRadius: 8,
   },
-  caption: {
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userName: {
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  postImage: {
     marginTop: 10,
   },
-  feedContainer: {
-    display: "flex",
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 10,
+  },
+  caption: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 10,
+  },
+  cardActions: {
+    justifyContent: 'space-between',
   },
   logo: {
     width: 40,
