@@ -17,6 +17,7 @@ import SplashScreen from "./src/screens/SplashScreen";
 import PostShare from "./src/screens/PostShare";
 import MyPosts from "./src/screens/MyPosts";
 import SaveRoute from "./src/screens/SaveRoute";
+import UserProfile from "./src/screens/UserProfile"; // Make sure the path is correct
 import RouteDetail from "./src/screens/RouteDetail";
 
 const Stack = createNativeStackNavigator();
@@ -30,13 +31,11 @@ function App() {
           component={SplashScreen}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="Login"
           component={Login}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="Home"
           component={BottomNavigationTab}
@@ -48,12 +47,12 @@ function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Forgot Password"
+          name="ForgotPassword"
           component={ForgotPassword}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Follow Route"
+          name="FollowRoute"
           component={FollowRoute}
           options={{ headerShown: false }}
         />
@@ -69,6 +68,8 @@ function App() {
         <Stack.Screen name="MyRoutes" component={MyRoutes} />
         <Stack.Screen name="EditProfile" component={EdProf} />
         <Stack.Screen name="MyPosts" component={MyPosts} />
+        <Stack.Screen name="UserProfile" component={UserProfile} />
+        {/* Make sure this is correctly placed */}
       </Stack.Navigator>
     </NavigationContainer>
   );

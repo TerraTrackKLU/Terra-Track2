@@ -12,6 +12,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { GET_USER } from "../constants/links";
+import { LinearGradient } from "expo-linear-gradient";
 
 const Profile = ({ navigation }) => {
   const [user, setUser] = useState({
@@ -19,6 +20,7 @@ const Profile = ({ navigation }) => {
     surname: "",
     username: "",
     profilePic: "",
+    about: "", // Yeni alan eklendi
   });
 
   const fetchUserProfile = async () => {
@@ -34,6 +36,7 @@ const Profile = ({ navigation }) => {
         profilePic:
           response.data.profilePic ||
           "https://w7.pngwing.com/pngs/744/940/png-transparent-anonym-avatar-default-head-person-unknown-user-user-pictures-icon.png",
+        about: response.data.about, // "Hakkında" kısmı eklendi
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -82,25 +85,12 @@ const Profile = ({ navigation }) => {
           </Text>
         </View>
 
-        <View style={styles.statsContainer}>
-          <View
-            style={[
-              styles.statsBox,
-              {
-                borderColor: "#DFD8C8",
-                borderLeftWidth: 1,
-                borderRightWidth: 1,
-              },
-            ]}
-          >
-            <Text style={[styles.text, { fontSize: 24 }]}>844</Text>
-            <Text style={[styles.text, styles.subText]}>Followers</Text>
-          </View>
-          <View style={styles.statsBox}>
-            <Text style={[styles.text, { fontSize: 24 }]}>302</Text>
-            <Text style={[styles.text, styles.subText]}>Following</Text>
-          </View>
-        </View>
+        <LinearGradient
+          colors={["#e0eafc", "#cfdef3"]}
+          style={styles.aboutContainer}
+        >
+          <Text style={styles.aboutText}>{user.about}</Text>
+        </LinearGradient>
 
         <TouchableOpacity
           style={styles.editButton}
@@ -164,20 +154,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 16,
   },
-  statsContainer: {
-    flexDirection: "row",
+  aboutContainer: {
     alignSelf: "center",
-    marginTop: 32,
-  },
-  statsBox: {
     alignItems: "center",
-    flex: 1,
+    marginTop: 16,
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
-  subText: {
-    fontSize: 12,
-    color: "#AEB5BC",
-    textTransform: "uppercase",
-    fontWeight: "500",
+  aboutText: {
+    color: "#52575D",
+    fontSize: 16,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   editButton: {
     marginTop: 20,

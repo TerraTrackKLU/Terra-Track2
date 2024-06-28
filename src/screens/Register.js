@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { TextInput } from "react-native-paper";
 import axios from "axios";
-import { REGISTER } from "../constants/links";
-
+import { REGISTER, BASE_URL } from "../constants/links";
 
 const Register = ({ navigation }) => {
   const [state, setState] = useState({
@@ -15,9 +14,10 @@ const Register = ({ navigation }) => {
     confirmPassword: "",
   });
 
-  const [day, setDay] = useState('');
-  const [month, setMonth] = useState('');
-  const [year, setYear] = useState('');
+  const [day, setDay] = useState("");
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState("");
+  const [nicknameExists, setNicknameExists] = useState(false); // Yeni state
 
   const handleDayChange = (text) => {
     setDay(text);
@@ -31,8 +31,34 @@ const Register = ({ navigation }) => {
     setYear(text);
   };
 
+  const checkNickname = async (nickname) => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/auth/check-nickname/${nickname}`
+      );
+      setNicknameExists(response.data.exists);
+    } catch (error) {
+      console.error("Error checking nickname:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (state.nickname) {
+      checkNickname(state.nickname);
+    }
+  }, [state.nickname]);
+
   const onPressSignUp = async () => {
-    console.log('asdlşkaskld')
+    if (nicknameExists) {
+      Alert.alert("Hata", "Bu kullanıcı adı zaten kullanımda.");
+      return;
+    }
+
+    if (state.password !== state.confirmPassword) {
+      Alert.alert("Hata", "Şifreler eşleşmiyor.");
+      return;
+    }
+
     const birthDate = `${year}-${month}-${day}`;
     const { name, surname, nickname, email, password } = state;
 
@@ -42,21 +68,19 @@ const Register = ({ navigation }) => {
       nickname,
       email,
       password,
-      birthDate
+      birthDate,
     };
 
-
-    await axios.post(REGISTER, requestBody).then((res) => {
-      Alert.alert('Başarılı', 'Kayıt başarılı!', [{ text: 'Tamam', onPress: () => navigation.navigate('Login') }]);
-      console.log(res)
-
-    })
-      .catch((error) => {
-        console.log("hata geldi")
-        Alert.alert('Hata', error.response.data.message);
-      })
-
-
+    try {
+      const response = await axios.post(REGISTER, requestBody);
+      Alert.alert("Başarılı", "Kayıt başarılı!", [
+        { text: "Tamam", onPress: () => navigation.navigate("Login") },
+      ]);
+      console.log(response);
+    } catch (error) {
+      console.error("Error during registration:", error);
+      Alert.alert("Hata", error.response.data.message);
+    }
   };
 
   return (
@@ -70,7 +94,7 @@ const Register = ({ navigation }) => {
           label="Name"
           mode="outlined"
           onChangeText={(text) => setState({ ...state, name: text })}
-          theme={{ colors: { primary: '#6200ee' } }}
+          theme={{ colors: { primary: "#6200ee" } }}
         />
       </View>
 
@@ -80,7 +104,7 @@ const Register = ({ navigation }) => {
           label="Surname"
           mode="outlined"
           onChangeText={(text) => setState({ ...state, surname: text })}
-          theme={{ colors: { primary: '#6200ee' } }}
+          theme={{ colors: { primary: "#6200ee" } }}
         />
       </View>
 
@@ -90,8 +114,13 @@ const Register = ({ navigation }) => {
           label="Username"
           mode="outlined"
           onChangeText={(text) => setState({ ...state, nickname: text })}
-          theme={{ colors: { primary: '#6200ee' } }}
+          theme={{ colors: { primary: "#6200ee" } }}
         />
+        {nicknameExists && (
+          <Text style={styles.errorText}>
+            Bu kullanıcı adı zaten kullanımda.
+          </Text>
+        )}
       </View>
 
       <View style={styles.inputContainer}>
@@ -100,7 +129,7 @@ const Register = ({ navigation }) => {
           label="Email"
           mode="outlined"
           onChangeText={(text) => setState({ ...state, email: text })}
-          theme={{ colors: { primary: '#6200ee' } }}
+          theme={{ colors: { primary: "#6200ee" } }}
         />
       </View>
 
@@ -111,7 +140,7 @@ const Register = ({ navigation }) => {
           mode="outlined"
           secureTextEntry
           onChangeText={(text) => setState({ ...state, password: text })}
-          theme={{ colors: { primary: '#6200ee' } }}
+          theme={{ colors: { primary: "#6200ee" } }}
         />
       </View>
 
@@ -122,7 +151,7 @@ const Register = ({ navigation }) => {
           mode="outlined"
           secureTextEntry
           onChangeText={(text) => setState({ ...state, confirmPassword: text })}
-          theme={{ colors: { primary: '#6200ee' } }}
+          theme={{ colors: { primary: "#6200ee" } }}
         />
       </View>
 
@@ -136,7 +165,7 @@ const Register = ({ navigation }) => {
             keyboardType="numeric"
             value={day}
             onChangeText={handleDayChange}
-            theme={{ colors: { primary: '#6200ee' } }}
+            theme={{ colors: { primary: "#6200ee" } }}
           />
           <Text style={styles.birthSeparator}>/</Text>
           <TextInput
@@ -146,7 +175,7 @@ const Register = ({ navigation }) => {
             keyboardType="numeric"
             value={month}
             onChangeText={handleMonthChange}
-            theme={{ colors: { primary: '#6200ee' } }}
+            theme={{ colors: { primary: "#6200ee" } }}
           />
           <Text style={styles.birthSeparator}>/</Text>
           <TextInput
@@ -156,7 +185,7 @@ const Register = ({ navigation }) => {
             keyboardType="numeric"
             value={year}
             onChangeText={handleYearChange}
-            theme={{ colors: { primary: '#6200ee' } }}
+            theme={{ colors: { primary: "#6200ee" } }}
           />
         </View>
       </View>
@@ -196,7 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   birthContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
   },
   birthLabel: {
@@ -205,18 +234,18 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   birthInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   birthInput: {
     width: 70,
     height: 40,
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
+    backgroundColor: "#fff",
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
     marginHorizontal: 5,
-    textAlign: 'center',
+    textAlign: "center",
   },
   birthSeparator: {
     fontSize: 18,
@@ -232,6 +261,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  errorText: {
+    color: "red",
+    marginTop: 5,
   },
 });
 

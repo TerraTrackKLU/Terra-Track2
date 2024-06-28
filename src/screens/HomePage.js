@@ -1,9 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import axios from "axios";
-import { Appbar, Card, Button as PaperButton, Avatar } from "react-native-paper";
+import { Card, Avatar } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { LIKE_POST, POST_HOMEPAGE, UNLIKE_POST, BASE_URL } from "../constants/links";
+import {
+  LIKE_POST,
+  POST_HOMEPAGE,
+  UNLIKE_POST,
+  BASE_URL,
+} from "../constants/links";
+import LikeButton from "../components/LikeButton";
 
 const HomePage = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -19,7 +34,7 @@ const HomePage = ({ navigation }) => {
   const fetchPosts = async () => {
     try {
       const response = await axios.get(POST_HOMEPAGE);
-      const updatedPosts = response.data.map(post => ({
+      const updatedPosts = response.data.map((post) => ({
         ...post,
         likes: Array.isArray(post.likes) ? post.likes : [],
       }));
@@ -27,7 +42,7 @@ const HomePage = ({ navigation }) => {
       setPosts(updatedPosts);
       fetchUsers(updatedPosts);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error("Error fetching posts:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -35,16 +50,21 @@ const HomePage = ({ navigation }) => {
   };
 
   const fetchUsers = async (posts) => {
+
     const userIds = [...new Set(posts.map(post => post.userId))];
     try {
-      const userResponses = await Promise.all(userIds.map(id => axios.get(`${BASE_URL}/auth/get-user`, { headers: { userid: id } })));
+      const userResponses = await Promise.all(
+        userIds.map((id) =>
+          axios.get(`${BASE_URL}/auth/get-user`, { headers: { userid: id } })
+        )
+      );
       const userMap = userResponses.reduce((map, response) => {
         map[response.data._id] = response.data;
         return map;
       }, {});
       setUsers(userMap);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -54,7 +74,7 @@ const HomePage = ({ navigation }) => {
   };
 
   const handleLike = async (postId) => {
-    const postIndex = posts.findIndex(post => post._id === postId);
+    const postIndex = posts.findIndex((post) => post._id === postId);
     const post = posts[postIndex];
     const isLiked = post.likes.includes(user._id);
 
@@ -62,7 +82,7 @@ const HomePage = ({ navigation }) => {
     if (isLiked) {
       updatedPosts[postIndex] = {
         ...post,
-        likes: post.likes.filter(id => id !== user._id),
+        likes: post.likes.filter((id) => id !== user._id),
       };
     } else {
       updatedPosts[postIndex] = {
@@ -79,7 +99,7 @@ const HomePage = ({ navigation }) => {
         await axios.post(LIKE_POST + postId, { userId: user._id });
       }
     } catch (error) {
-      console.error('Error liking/unliking post:', error);
+      console.error("Error liking/unliking post:", error);
       setPosts(posts);
     }
   };
@@ -105,11 +125,6 @@ const HomePage = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header>
-        <Appbar.Content title="Home" />
-        <Appbar.Action icon="magnify" onPress={() => { }} />
-        <Appbar.Action icon="message" onPress={() => { }} />
-      </Appbar.Header>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Text style={styles.logoText}>Terra</Text>
@@ -117,9 +132,6 @@ const HomePage = ({ navigation }) => {
           <Text style={styles.logoText}>Track</Text>
         </View>
       </View>
-
-     
-
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -131,28 +143,45 @@ const HomePage = ({ navigation }) => {
             <Card key={post._id} style={styles.card}>
               <View style={styles.cardHeader}>
                 {postUser && (
-                  <View style={styles.userInfo}>
-                    <Avatar.Image size={40} source={{ uri: postUser.profilePic }} />
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("UserProfile", {
+                        userId: post.userId,
+                      })
+                    }
+                    style={styles.userInfo}
+                  >
+                    <Avatar.Image
+                      size={40}
+                      source={{ uri: postUser.profilePic }}
+                    />
                     <Text style={styles.userName}>{postUser.name}</Text>
-                  </View>
+                  </TouchableOpacity>
                 )}
               </View>
-              <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
-                <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("PostDetail", { postId: post._id })
+                }
+              >
+                <Card.Cover
+                  source={{ uri: post.images[0] }}
+                  style={styles.postImage}
+                />
               </TouchableOpacity>
               <Card.Content>
                 <Text style={styles.title}>{post.title}</Text>
                 <Text style={styles.caption}>{post.description}</Text>
               </Card.Content>
               <Card.Actions style={styles.cardActions}>
-                <PaperButton 
-                  icon={post.likes.includes(user._id) ? "heart" : "heart-outline"} 
-                  color={post.likes.includes(user._id) ? "red" : undefined} 
+                <LikeButton
+                  isLiked={post.likes.includes(user._id)}
                   onPress={() => handleLike(post._id)}
-                >
+                  likeCount={post.likes.length}
+                />
+               <PaperButton>
                   Like {post.likes.length}
                 </PaperButton>
-                
                 <PaperButton icon="bookmark-outline" onPress={() => addToFavorites(post._id)}>Favorite</PaperButton>
               </Card.Actions>
             </Card>
@@ -170,51 +199,55 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#6200ee',
+    color: "#6200ee",
+  },
+  backgroundAnimation: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
   },
   card: {
     margin: 10,
     borderRadius: 8,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   userName: {
     marginLeft: 10,
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   postImage: {
     marginTop: 10,
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginVertical: 10,
   },
   caption: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 10,
   },
   cardActions: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   logo: {
     width: 40,
@@ -236,6 +269,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    alignSelf: "center",
+  },
+  header: {
+    alignItems: "center",
+    marginVertical: 20,
   },
   postButton: {
     backgroundColor: "#6200ee",
