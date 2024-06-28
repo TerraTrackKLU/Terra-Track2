@@ -17,6 +17,7 @@ import SplashScreen from "./src/screens/SplashScreen";
 import PostShare from "./src/screens/PostShare";
 import MyPosts from "./src/screens/MyPosts";
 import SaveRoute from "./src/screens/SaveRoute";
+import RouteDetail from "./src/screens/RouteDetail";
 
 const Stack = createNativeStackNavigator();
 
@@ -63,6 +64,7 @@ function App() {
         />
         <Stack.Screen name="PostShare" component={PostShare} />
         <Stack.Screen name="PostDetail" component={PostDetail} />
+        <Stack.Screen name="RouteDetail" component={RouteDetail} />
         <Stack.Screen name="MyFavorites" component={MyFav} />
         <Stack.Screen name="MyRoutes" component={MyRoutes} />
         <Stack.Screen name="EditProfile" component={EdProf} />

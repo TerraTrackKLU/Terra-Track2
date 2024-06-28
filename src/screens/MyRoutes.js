@@ -33,7 +33,7 @@ const MyRoutes = ({ navigation }) => {
     <ScrollView style={styles.container}>
       {routes.map((item) => (
         <View key={item._id} style={styles.card}>
-          <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { routeId: item._id })}>
+          <TouchableOpacity onPress={() => navigation.navigate('RouteDetail', { routeId: item._id })}>
             <View style={styles.cardHeader}>
               <Text style={styles.routeName}>{item.routeName}</Text>
               <Text style={styles.activityType}>{item.activityType}</Text>
