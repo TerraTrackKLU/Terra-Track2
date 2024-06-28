@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Alert } from "react-native";
 import axios from "axios";
 import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
@@ -122,6 +122,52 @@ const MyPosts = ({ navigation }) => {
     }
   };
 
+  const handleDeletePost = (postId) => {
+    Alert.alert(
+      "Postu Sil",
+      "Bu postu silmek istediğinizden emin misiniz?",
+      [
+        {
+          text: "İptal",
+          style: "cancel"
+        },
+        {
+          text: "Sil",
+          onPress: async () => {
+            try {
+              await axios.delete(`${BASE_URL}/posts/${postId}`);
+              setPosts(posts.filter((post) => post._id !== postId));
+              alert("Post silindi!");
+            } catch (error) {
+              console.error("Error deleting post:", error);
+              alert("Post silinirken bir hata oluştu.");
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
+  const handleUpdatePost = (postId) => {
+    Alert.alert(
+      "Postu Güncelle",
+      "Bu postu güncellemek istediğinizden emin misiniz?",
+      [
+        {
+          text: "İptal",
+          style: "cancel"
+        },
+        {
+          text: "Güncelle",
+          onPress: () => {
+            navigation.navigate('PostUpdate', { postId });
+          }
+        }
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
@@ -169,6 +215,19 @@ const MyPosts = ({ navigation }) => {
                   onPress={() => handleFavorite(post._id)}
                 >
                   {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                </PaperButton>
+                <PaperButton
+                  icon="delete"
+                  onPress={() => handleDeletePost(post._id)}
+                  color="red"
+                >
+                  Sil
+                </PaperButton>
+                <PaperButton
+                  icon="pencil"
+                  onPress={() => handleUpdatePost(post._id)}
+                >
+                  Güncelle
                 </PaperButton>
               </Card.Actions>
             </Card>
