@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, TextInput } from 'react-native';
-import { Button, IconButton, Card } from 'react-native-paper';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { Button } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { BASE_URL } from '../constants/links';
@@ -12,11 +12,6 @@ const RouteDetail = () => {
   const { routeId, postId } = route.params;
 
   const [post, setPost] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [userId, setUserId] = useState(null);
-  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -33,60 +28,16 @@ const RouteDetail = () => {
       }
     };
 
-    const fetchComments = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/comments/${routeId || postId}`);
-        setComments(response.data);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      }
-    };
-
     const getUserIdAndName = async () => {
       const id = await AsyncStorage.getItem('userId');
-      setUserId(id);
-
-      const response = await axios.get(`${BASE_URL}/auth/get-user`, {
-        headers: { userid: id }
-      });
-      setUserName(response.data.name);
     };
 
     fetchPost();
-    fetchComments();
     getUserIdAndName();
   }, [routeId, postId]);
 
   const handleFollowRoute = () => {
     navigation.navigate('Map');
-  };
-
-  const handleComment = async () => {
-    if (newComment.trim() !== '') {
-      try {
-        const commentData = {
-          route: routeId || postId,
-          user: userId,
-          text: newComment
-        };
-        const response = await axios.post(`${BASE_URL}/comments`, commentData);
-        setComments([...comments, { ...response.data, user: { _id: userId, name: userName } }]);
-        setNewComment('');
-      } catch (error) {
-        console.error('Error posting comment', error);
-        Alert.alert('Error', 'Yorum gönderilemedi. Lütfen tekrar deneyin.');
-      }
-    } else {
-      Alert.alert('Uyarı', 'Yorum boş olamaz.');
-    }
-  };
-
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    Alert.alert(
-      'Favori Durumu',
-      isFavorite ? 'Favorilerden çıkarıldı' : 'Favorilere eklendi'
-    );
   };
 
   if (!post) {
@@ -143,8 +94,6 @@ const RouteDetail = () => {
           </View>
         </View>
         <Text style={styles.description}>{post.description}</Text>
-      
-       
       </View>
     </ScrollView>
   );
@@ -215,23 +164,6 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
-  actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  iconButtonContainer: {
-    alignItems: 'center',
-  },
-  iconButton: {
-    backgroundColor: '#6200ee',
-    borderRadius: 50,
-  },
-  iconLabel: {
-    color: '#333',
-    fontSize: 14,
-    marginTop: 5,
-  },
   image: {
     width: '100%',
     height: 200,
@@ -250,35 +182,6 @@ const styles = StyleSheet.create({
   mapErrorText: {
     fontSize: 16,
     color: '#666',
-  },
-  card: {
-    marginTop: 20,
-    borderRadius: 10,
-  },
-  comment: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
-  commentUser: {
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-  commentDate: {
-    fontSize: 12,
-    color: '#666',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 10,
-  },
-  submitButton: {
-    marginTop: 10,
-    backgroundColor: '#6200ee',
   },
 });
 
