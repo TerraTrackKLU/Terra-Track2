@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SAVE_ROUTE } from '../constants/links';
+import { Picker } from '@react-native-picker/picker';
 
 const SaveRoute = () => {
     const navigation = useNavigation();
@@ -15,6 +16,9 @@ const SaveRoute = () => {
     const [distance, setDistance] = useState('');
     const [elevationGain, setElevationGain] = useState('');
     const [laps, setLaps] = useState('');
+    const [difficulty, setDifficulty] = useState('');
+    const [duration, setDuration] = useState('');
+    const [routeType, setRouteType] = useState('');
     const [owner, setOwner] = useState('');
 
     useEffect(() => {
@@ -35,6 +39,9 @@ const SaveRoute = () => {
                 distance,
                 elevationGain,
                 laps,
+                difficulty,
+                duration,
+                routeType,
                 owner,
                 points,
             });
@@ -54,21 +61,24 @@ const SaveRoute = () => {
                 value={routeName}
                 onChangeText={setRouteName}
             />
+            <Picker
+                selectedValue={activityType}
+                style={styles.picker}
+                onValueChange={(itemValue) => setActivityType(itemValue)}
+            >
+                <Picker.Item label="Aktivite Türü Seçin" value="" />
+                <Picker.Item label="Yürüyüş" value="yürüyüş" />
+                <Picker.Item label="Kamp" value="kamp" />
+            </Picker>
             <TextInput
                 style={styles.input}
-                placeholder="Aktivite Türü"
-                value={activityType}
-                onChangeText={setActivityType}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Mesafe"
+                placeholder="Mesafe (km)"
                 value={distance}
                 onChangeText={setDistance}
             />
             <TextInput
                 style={styles.input}
-                placeholder="İrtifa Kazancı"
+                placeholder="İrtifa Kazancı (m)"
                 value={elevationGain}
                 onChangeText={setElevationGain}
             />
@@ -77,6 +87,24 @@ const SaveRoute = () => {
                 placeholder="Tur Sayısı"
                 value={laps}
                 onChangeText={setLaps}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Zorluk"
+                value={difficulty}
+                onChangeText={setDifficulty}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Toplam Süre (saat)"
+                value={duration}
+                onChangeText={setDuration}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Rota Türü"
+                value={routeType}
+                onChangeText={setRouteType}
             />
             <Button title="Kaydet" onPress={saveRoute} />
         </ScrollView>
@@ -101,6 +129,11 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         borderRadius: 8,
         padding: 10,
+        marginBottom: 15,
+    },
+    picker: {
+        height: 50,
+        width: '100%',
         marginBottom: 15,
     },
 });

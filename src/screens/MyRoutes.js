@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../constants/links';
@@ -84,6 +84,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 10,
   },
   routeName: {
@@ -93,8 +95,12 @@ const styles = StyleSheet.create({
   },
   activityType: {
     fontSize: 16,
-    color: '#888',
-    marginTop: 4,
+    color: '#6200ee',
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    textTransform: 'capitalize',
   },
   divider: {
     borderBottomColor: '#eee',
