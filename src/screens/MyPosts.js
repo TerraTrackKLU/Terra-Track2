@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Alert } from "react-native";
 import axios from "axios";
-import { Avatar, Card, Button as PaperButton, Menu, IconButton } from "react-native-paper";
+import { Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { BASE_URL, LIKE_POST, UNLIKE_POST } from "../constants/links";
 import LikeButton from "../components/LikeButton";
@@ -13,7 +13,6 @@ const MyPosts = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState([]);
-  const [visible, setVisible] = useState({});
 
   useEffect(() => {
     fetchPosts();
@@ -169,14 +168,6 @@ const MyPosts = ({ navigation }) => {
     );
   };
 
-  const openMenu = (postId) => {
-    setVisible((prev) => ({ ...prev, [postId]: true }));
-  };
-
-  const closeMenu = (postId) => {
-    setVisible((prev) => ({ ...prev, [postId]: false }));
-  };
-
   if (loading) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
@@ -205,19 +196,6 @@ const MyPosts = ({ navigation }) => {
                     <Text style={styles.userName}>{postUser.name}</Text>
                   </View>
                 )}
-                <Menu
-                  visible={visible[post._id]}
-                  onDismiss={() => closeMenu(post._id)}
-                  anchor={
-                    <IconButton
-                      icon="dots-vertical"
-                      onPress={() => openMenu(post._id)}
-                    />
-                  }
-                >
-                  <Menu.Item onPress={() => handleUpdatePost(post._id)} title="Güncelle" />
-                  <Menu.Item onPress={() => handleDeletePost(post._id)} title="Sil" />
-                </Menu>
               </View>
               <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
                 <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
@@ -237,6 +215,19 @@ const MyPosts = ({ navigation }) => {
                   onPress={() => handleFavorite(post._id)}
                 >
                   {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                </PaperButton>
+                <PaperButton
+                  icon="delete"
+                  onPress={() => handleDeletePost(post._id)}
+                  color="red"
+                >
+                  Sil
+                </PaperButton>
+                <PaperButton
+                  icon="pencil"
+                  onPress={() => handleUpdatePost(post._id)}
+                >
+                  Güncelle
                 </PaperButton>
               </Card.Actions>
             </Card>
@@ -269,7 +260,6 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
@@ -286,8 +276,6 @@ const styles = StyleSheet.create({
   },
   postImage: {
     marginTop: 10,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
   },
   title: {
     fontSize: 20,
