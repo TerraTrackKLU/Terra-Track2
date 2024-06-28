@@ -4,6 +4,7 @@ import axios from "axios";
 import { Appbar, Avatar, Card, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { BASE_URL, LIKE_POST, UNLIKE_POST } from "../constants/links";
+import LikeButton from "../components/LikeButton";
 
 const MyPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -11,9 +12,11 @@ const MyPosts = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     fetchPosts();
+    fetchFavorites();
   }, [user]);
 
   const fetchPosts = async () => {
@@ -38,6 +41,15 @@ const MyPosts = ({ navigation }) => {
     }
   };
 
+  const fetchFavorites = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/favorites/${user._id}`);
+      setFavorites(response.data);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  };
+
   const fetchUsers = async (posts) => {
     const userIds = [...new Set(posts.map(post => post.userId))]; // Postlardan kullanıcı ID'lerini topla ve benzersiz olanları al
     try {
@@ -55,6 +67,7 @@ const MyPosts = ({ navigation }) => {
   const onRefresh = () => {
     setRefreshing(true);
     fetchPosts();
+    fetchFavorites();
   };
 
   const handleLike = async (postId) => {
@@ -84,8 +97,28 @@ const MyPosts = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error liking/unliking post:', error);
-
       setPosts(posts);
+    }
+  };
+
+  const handleFavorite = async (postId) => {
+    const isFavorite = favorites.some((fav) => fav._id === postId);
+
+    try {
+      if (isFavorite) {
+        await axios.delete(`${BASE_URL}/favorites/${user._id}/${postId}`);
+        setFavorites(favorites.filter((fav) => fav._id !== postId));
+        alert("Favorilerden çıkarıldı!");
+      } else {
+        await axios.post(`${BASE_URL}/favorites`, {
+          userId: user._id,
+          postId: postId,
+        });
+        setFavorites([...favorites, { _id: postId }]);
+        alert("Favorilere eklendi!");
+      }
+    } catch (error) {
+      console.error("Error updating favorites:", error);
     }
   };
 
@@ -107,6 +140,7 @@ const MyPosts = ({ navigation }) => {
       >
         {posts.map((post) => {
           const postUser = users[post.userId];
+          const isFavorite = favorites.some((fav) => fav._id === post._id);
           return (
             <Card key={post._id} style={styles.card}>
               <View style={styles.cardHeader}>
@@ -125,14 +159,17 @@ const MyPosts = ({ navigation }) => {
                 <Text style={styles.caption}>{post.description}</Text>
               </Card.Content>
               <Card.Actions style={styles.cardActions}>
-                <PaperButton 
-                  icon={post.likes.includes(user._id) ? "heart" : "heart-outline"} 
-                  color={post.likes.includes(user._id) ? "red" : undefined} 
+                <LikeButton
+                  isLiked={post.likes.includes(user._id)}
                   onPress={() => handleLike(post._id)}
+                  likeCount={post.likes.length}
+                />
+                <PaperButton
+                  icon={isFavorite ? "bookmark-remove-outline" : "bookmark-outline"}
+                  onPress={() => handleFavorite(post._id)}
                 >
-                  Like {post.likes.length}
+                  {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
                 </PaperButton>
-                <PaperButton icon="comment-outline" onPress={() => handleComment(post._id)}>Comment</PaperButton>
               </Card.Actions>
             </Card>
           );
