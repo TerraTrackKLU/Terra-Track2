@@ -9,7 +9,7 @@ const HomePage = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [users, setUsers] = useState({});
   const user = useSelector((state) => state.user.user);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -23,10 +23,9 @@ const HomePage = ({ navigation }) => {
         ...post,
         likes: Array.isArray(post.likes) ? post.likes : [],
       }));
-      // Postları yüklenme tarihine göre azalan sırayla (en son paylaşılan en üstte) sıralayın
       updatedPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
       setPosts(updatedPosts);
-      fetchUsers(updatedPosts); // Kullanıcı verilerini çekmek için çağır
+      fetchUsers(updatedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
@@ -36,7 +35,7 @@ const HomePage = ({ navigation }) => {
   };
 
   const fetchUsers = async (posts) => {
-    const userIds = [...new Set(posts.map(post => post.userId))]; // Postlardan kullanıcı ID'lerini topla ve benzersiz olanları al
+    const userIds = [...new Set(posts.map(post => post.userId))];
     try {
       const userResponses = await Promise.all(userIds.map(id => axios.get(`${BASE_URL}/auth/get-user`, { headers: { userid: id } })));
       const userMap = userResponses.reduce((map, response) => {
@@ -81,8 +80,17 @@ const HomePage = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error liking/unliking post:', error);
-
       setPosts(posts);
+    }
+  };
+
+  const addToFavorites = async (postId) => {
+    try {
+      await axios.post(`${BASE_URL}/favorites`, { userId: user._id, postId: postId });
+      console.log('Post favorilere eklendi.');
+      alert('Favorilere eklendi!');
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
     }
   };
 
@@ -109,7 +117,10 @@ const HomePage = ({ navigation }) => {
           <Text style={styles.logoText}>Track</Text>
         </View>
       </View>
-     
+
+      <TouchableOpacity style={styles.postButton} onPress={() => navigation.navigate("PostShare")}>
+        <Text style={styles.postButtonText}>Post Paylaş</Text>
+      </TouchableOpacity>
 
       <ScrollView
         refreshControl={
@@ -144,6 +155,7 @@ const HomePage = ({ navigation }) => {
                   Like {post.likes.length}
                 </PaperButton>
                 <PaperButton icon="comment-outline" onPress={() => { }}>Comment</PaperButton>
+                <PaperButton icon="bookmark-outline" onPress={() => addToFavorites(post._id)}>Favorite</PaperButton>
               </Card.Actions>
             </Card>
           );
