@@ -76,38 +76,40 @@ const MyRoutes = ({ navigation }) => {
         </View>
       ) : (
         routes.map((item) => (
-          <View key={item._id} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <TouchableOpacity onPress={() => navigation.navigate('RouteDetail', { routeId: item._id })}>
+          <TouchableOpacity key={item._id} onPress={() => navigation.navigate('RouteDetail', { routeId: item._id })}>
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
                 <Text style={styles.routeName}>{item.routeName}</Text>
                 <Text style={styles.activityType}>{item.activityType}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDeleteRoute(item._id)} style={styles.deleteButton}>
-                <Text style={styles.deleteButtonText}>Sil</Text>
-              </TouchableOpacity>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.details}>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailTitle}>Mesafe</Text>
+                  <Text style={styles.detailValue}>{item.distance}</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailTitle}>İrtifa Kazancı</Text>
+                  <Text style={styles.detailValue}>{item.elevationGain}</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailTitle}>Tur</Text>
+                  <Text style={styles.detailValue}>{item.laps}</Text>
+                </View>
+              </View>
+              <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity
+                  style={styles.postButton}
+                  onPress={() => handlePostShare(item)}
+                >
+                  <Text style={styles.postButtonText}>Post Paylaş</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDeleteRoute(item._id)} style={styles.deleteButton}>
+                  <Text style={styles.deleteButtonText}>Sil</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.divider} />
-            <View style={styles.details}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailTitle}>Mesafe</Text>
-                <Text style={styles.detailValue}>{item.distance}</Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailTitle}>İrtifa Kazancı</Text>
-                <Text style={styles.detailValue}>{item.elevationGain}</Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailTitle}>Tur</Text>
-                <Text style={styles.detailValue}>{item.laps}</Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={styles.postButton}
-              onPress={() => handlePostShare(item)}
-            >
-              <Text style={styles.postButtonText}>Post Paylaş</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         ))
       )}
     </ScrollView>
@@ -160,6 +162,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
+    flex: 1,
   },
   activityType: {
     fontSize: 16,
@@ -169,15 +172,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     textTransform: 'capitalize',
+    alignSelf: 'flex-start',
   },
   deleteButton: {
     backgroundColor: '#e53935',
-    padding: 5,
+    padding: 10,
     borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 10,
   },
   deleteButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   divider: {
@@ -203,12 +209,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
   postButton: {
+    flex: 1,
     backgroundColor: '#6200ee',
     padding: 10,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
+    marginRight: 10,
   },
   postButtonText: {
     color: '#fff',
