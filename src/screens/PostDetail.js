@@ -259,7 +259,7 @@
 
 // export default PostDetail;
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, TextInput, ActivityIndicator } from 'react-native';
 import { Button, IconButton, Card } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
@@ -272,11 +272,11 @@ const PostDetail = () => {
   const { routeId, postId } = route.params;
 
   const [post, setPost] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [userId, setUserId] = useState(null);
   const [userName, setUserName] = useState('');
+  const [loadingComments, setLoadingComments] = useState(true);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -299,6 +299,8 @@ const PostDetail = () => {
         setComments(response.data);
       } catch (error) {
         console.error("Error fetching comments:", error);
+      } finally {
+        setLoadingComments(false);
       }
     };
 
@@ -339,14 +341,6 @@ const PostDetail = () => {
     } else {
       Alert.alert('Uyarı', 'Yorum boş olamaz.');
     }
-  };
-
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    Alert.alert(
-      'Favori Durumu',
-      isFavorite ? 'Favorilerden çıkarıldı' : 'Favorilere eklendi'
-    );
   };
 
   if (!post) {
@@ -403,32 +397,13 @@ const PostDetail = () => {
           </View>
         </View>
         <Text style={styles.description}>{post.description}</Text>
-        <View style={styles.actionsContainer}>
-          <View style={styles.iconButtonContainer}>
-            <IconButton
-              icon="comment"
-              color="white"
-              size={24}
-              style={styles.iconButton}
-              onPress={handleComment}
-            />
-            <Text style={styles.iconLabel}>Yorum Yap</Text>
-          </View>
-          <View style={styles.iconButtonContainer}>
-            <IconButton
-              icon="heart"
-              color={isFavorite ? 'red' : 'white'}
-              size={24}
-              style={styles.iconButton}
-              onPress={handleFavorite}
-            />
-            <Text style={styles.iconLabel}>Favori</Text>
-          </View>
-        </View>
+        
         <Card style={styles.card}>
           <Card.Title title="Yorumlar ve Değerlendirmeler" />
           <Card.Content>
-            {comments.length === 0 ? (
+            {loadingComments ? (
+              <ActivityIndicator size="large" color="#6200ee" />
+            ) : comments.length === 0 ? (
               <Text>Henüz yorum yapılmamış. İlk yorumu siz yapın!</Text>
             ) : (
               comments.map((comment, index) => (
