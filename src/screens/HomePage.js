@@ -118,9 +118,7 @@ const HomePage = ({ navigation }) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.postButton} onPress={() => navigation.navigate("PostShare")}>
-        <Text style={styles.postButtonText}>Post Paylaş</Text>
-      </TouchableOpacity>
+     
 
       <ScrollView
         refreshControl={
@@ -154,7 +152,7 @@ const HomePage = ({ navigation }) => {
                 >
                   Like {post.likes.length}
                 </PaperButton>
-                <PaperButton icon="comment-outline" onPress={() => { }}>Comment</PaperButton>
+                
                 <PaperButton icon="bookmark-outline" onPress={() => addToFavorites(post._id)}>Favorite</PaperButton>
               </Card.Actions>
             </Card>
