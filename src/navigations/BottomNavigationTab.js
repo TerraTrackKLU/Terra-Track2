@@ -34,7 +34,7 @@ const BottomNavigationTab = () => {
               iconName = "home";
             } else if (route.name === "Map") {
               iconName = "map";
-            } else if (route.name === "Cark") {
+            } else if (route.name === "Spin") {
               iconName = "car";
             } else if (route.name === "Profile") {
               iconName = "person";
@@ -45,7 +45,7 @@ const BottomNavigationTab = () => {
       >
         <Tab.Screen name="HomePage" component={HomePage} />
         <Tab.Screen name="Map" component={Map} />
-        <Tab.Screen name="Cark" component={Cark} />
+        <Tab.Screen name="Spin" component={Cark} />
         <Tab.Screen name="Profile" component={Profile} />
       </Tab.Navigator>
     </PaperProvider>

@@ -122,14 +122,14 @@ const HomePage = ({ navigation }) => {
       if (isFavorite) {
         await axios.delete(`${BASE_URL}/favorites/${user._id}/${postId}`);
         setFavorites(favorites.filter((fav) => fav._id !== postId));
-        alert("Favorilerden çıkarıldı!");
+        alert("Removed from favorites!");
       } else {
         await axios.post(`${BASE_URL}/favorites`, {
           userId: user._id,
           postId: postId,
         });
         setFavorites([...favorites, { _id: postId }]);
-        alert("Favorilere eklendi!");
+        alert("Added to favorites!");
       }
     } catch (error) {
       console.error("Error updating favorites:", error);
@@ -210,7 +210,7 @@ const HomePage = ({ navigation }) => {
                   }
                   onPress={() => handleFavorite(post._id)}
                 >
-                  {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                  {isFavorite ? "Remove Favorite" : "Add Favorite"}
                 </PaperButton>
               </Card.Actions>
             </Card>
