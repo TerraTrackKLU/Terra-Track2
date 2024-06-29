@@ -3,15 +3,17 @@ import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import MapView, { Marker, Polyline, Circle } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
+import { useRoute } from '@react-navigation/native';
 
-const GOOGLE_MAPS_APIKEY = 'YOUR_GOOGLE_MAPS_API_KEY';
+const GOOGLE_MAPS_APIKEY = 'AIzaSyBEiFr-BvP0OtvSMKqLxVUviO5hrMWx6cs';
 
 const FollowRoute = () => {
+    const routeParams = useRoute().params;
+    const points = routeParams.points || []; // Parametre olarak gelen points dizisini al
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
     const [isFollowing, setIsFollowing] = useState(false);
     const [distanceToStart, setDistanceToStart] = useState(null);
-    const [route, setRoute] = useState([]);
     const [userLocation, setUserLocation] = useState(null);
     const mapRef = useRef(null);
 
@@ -29,14 +31,6 @@ const FollowRoute = () => {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
             });
-
-            // Rota başlangıç noktasını kullanıcının konumunun 100 metre yakınına ayarlayın
-            const newRoute = [
-                { latitude: location.coords.latitude + 0.001, longitude: location.coords.longitude + 0.001 },
-                { latitude: location.coords.latitude + 0.0015, longitude: location.coords.longitude + 0.0015 },
-                { latitude: location.coords.latitude + 0.002, longitude: location.coords.longitude + 0.002 },
-            ];
-            setRoute(newRoute);
 
             // Haritayı kullanıcı konumuna odaklayın
             mapRef.current.animateToRegion({
@@ -62,12 +56,12 @@ const FollowRoute = () => {
     }, []);
 
     useEffect(() => {
-        if (userLocation && route.length > 0) {
-            const start = route[0];
+        if (userLocation && points.length > 0) {
+            const start = points[0];
             const distance = getDistance(userLocation, start);
             setDistanceToStart(distance);
         }
-    }, [userLocation, route]);
+    }, [userLocation, points]);
 
     const getDistance = (loc1, loc2) => {
         const R = 6371e3; // metres
@@ -109,10 +103,10 @@ const FollowRoute = () => {
                     longitudeDelta: 0.01,
                 }}
             >
-                {route.map((point, index) => (
+                {points.map((point, index) => (
                     <Marker key={index} coordinate={point} />
                 ))}
-                <Polyline coordinates={route} strokeColor="#000" strokeWidth={3} />
+                <Polyline coordinates={points} strokeColor="#000" strokeWidth={3} />
                 {userLocation && (
                     <Circle
                         center={userLocation}
@@ -121,10 +115,10 @@ const FollowRoute = () => {
                         fillColor="rgba(0,0,255,0.2)"
                     />
                 )}
-                {userLocation && route.length > 0 && (
+                {userLocation && points.length > 0 && (
                     <MapViewDirections
                         origin={userLocation}
-                        destination={route[0]}
+                        destination={points[0]}
                         apikey={GOOGLE_MAPS_APIKEY}
                         strokeWidth={3}
                         strokeColor="red"

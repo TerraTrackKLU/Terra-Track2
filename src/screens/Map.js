@@ -20,6 +20,9 @@ const Map = () => {
         setErrorMsg('Permission to access location was denied');
         return;
       }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocationState(location.coords);
     })();
   }, []);
 
@@ -76,12 +79,22 @@ const Map = () => {
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.map}>
-        {markers.map((marker, index) => (
-          <Marker key={index} coordinate={marker} />
-        ))}
-        <Polyline coordinates={markers} strokeColor="#000" strokeWidth={6} />
-      </MapView>
+      {locationState && (
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: locationState.latitude,
+            longitude: locationState.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+        >
+          {markers.map((marker, index) => (
+            <Marker key={index} coordinate={marker} />
+          ))}
+          <Polyline coordinates={markers} strokeColor="#000" strokeWidth={6} />
+        </MapView>
+      )}
       <View style={styles.buttonsContainer}>
         {!recording ? (
           <Button title="Start" onPress={startRecording} />
