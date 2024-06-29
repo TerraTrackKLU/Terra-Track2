@@ -320,7 +320,11 @@ const PostDetail = () => {
   }, [routeId, postId]);
 
   const handleFollowRoute = () => {
-    navigation.navigate('Map');
+    if (post && post.points) {
+      navigation.navigate('FollowRoute', { points: post.points });
+    } else {
+      alert('Points data is missing.');
+    }
   };
 
   const handleComment = async () => {
