@@ -3,7 +3,6 @@ import { View, TextInput, Button, StyleSheet, Text, Image, ScrollView, Touchable
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { Picker } from "@react-native-picker/picker";
 import { POST_SHARE } from "../constants/links";
 import { useSelector } from "react-redux";
 import { useRoute } from "@react-navigation/native";
@@ -17,9 +16,8 @@ const PostShare = ({ navigation }) => {
   const [routeType, setRouteType] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [tag, setTag] = useState("");
-  const [routeId, setRouteId] = useState(""); // Add this state
+  const [activityType, setActivityType] = useState("");
+  const [routeId, setRouteId] = useState("");
 
   const user = useSelector((state) => state.user.user);
   const route = useRoute();
@@ -32,14 +30,15 @@ const PostShare = ({ navigation }) => {
     }
 
     if (route.params && route.params.route) {
-      const { routeName, distance, difficulty, duration, routeType, description, _id } = route.params.route;
+      const { routeName, distance, difficulty, duration, routeType, description, _id, activityType } = route.params.route;
       setTitle(routeName);
       setDistance(distance);
       setDifficulty(difficulty);
       setDuration(duration);
       setRouteType(routeType);
       setDescription(description);
-      setRouteId(_id); // Set the routeId
+      setRouteId(_id);
+      setActivityType(activityType); // Set the initial tag based on activityType
     }
   }, [user, route.params]);
 
@@ -59,10 +58,10 @@ const PostShare = ({ navigation }) => {
       routeType,
       description,
       images,
-      tags: selectedTags,
+      tags: [activityType], // Include the tag in the post data
       userId: user._id,
       date,
-      routeId, // Include the routeId in the post data
+      routeId,
     };
 
     try {
@@ -124,16 +123,6 @@ const PostShare = ({ navigation }) => {
     }
   };
 
-  const handleTagChange = (tag) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-    } else if (selectedTags.length < 2) {
-      setSelectedTags([...selectedTags, tag]);
-    } else {
-      alert("En fazla 2 etiket seçebilirsiniz.");
-    }
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TextInput
@@ -152,32 +141,39 @@ const PostShare = ({ navigation }) => {
         multiline
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Mesafe"
         placeholderTextColor="#888"
         value={distance}
-        onChangeText={setDistance}
+        editable={false}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Zorluk"
         placeholderTextColor="#888"
         value={difficulty}
-        onChangeText={setDifficulty}
+        editable={false}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Toplam Süre"
         placeholderTextColor="#888"
         value={duration}
-        onChangeText={setDuration}
+        editable={false}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Rota Türü"
         placeholderTextColor="#888"
         value={routeType}
-        onChangeText={setRouteType}
+        editable={false}
+      />
+      <TextInput
+        style={[styles.input, styles.inputDisabled]}
+        placeholder="Aktivite Türü"
+        placeholderTextColor="#888"
+        value={activityType}
+        editable={false}
       />
       <TextInput
         style={[styles.input, styles.textArea]}
@@ -197,26 +193,6 @@ const PostShare = ({ navigation }) => {
           <Image key={index} source={{ uri: image }} style={styles.image} />
         ))}
       </View>
-
-      <Text style={styles.label}>Etiket Seç:</Text>
-      <Picker
-        selectedValue={tag}
-        style={styles.picker}
-        onValueChange={(itemValue) => {
-          if (selectedTags.includes(itemValue)) {
-            setSelectedTags(selectedTags.filter((t) => t !== itemValue));
-          } else if (selectedTags.length < 2) {
-            setSelectedTags([...selectedTags, itemValue]);
-          } else {
-            alert("En fazla 2 etiket seçebilirsiniz.");
-          }
-          setTag(itemValue);
-        }}
-      >
-        <Picker.Item label="Seçiniz" value="" />
-        <Picker.Item label="Yürüyüş" value="yürüyüş" />
-        <Picker.Item label="Kamp" value="kamp" />
-      </Picker>
 
       <TouchableOpacity style={styles.button} onPress={handlePostShare}>
         <Text style={styles.buttonText}>Post Paylaş</Text>
@@ -239,6 +215,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 10,
     backgroundColor: "#fff",
+  },
+  inputDisabled: {
+    backgroundColor: "#e9ecef",
+    color: "#6c757d",
   },
   textArea: {
     height: 80,
@@ -265,19 +245,6 @@ const styles = StyleSheet.create({
     height: 100,
     marginRight: 10,
     marginBottom: 10,
-    borderRadius: 8,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-    marginBottom: 20,
-    borderColor: "#ccc",
-    borderWidth: 1,
     borderRadius: 8,
   },
 });
