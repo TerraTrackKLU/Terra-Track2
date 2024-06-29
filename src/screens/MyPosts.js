@@ -184,53 +184,57 @@ const MyPosts = ({ navigation }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {posts.map((post) => {
-          const postUser = users[post.userId];
-          const isFavorite = favorites.some((fav) => fav._id === post._id);
-          return (
-            <Card key={post._id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                {postUser && (
-                  <View style={styles.userInfo}>
-                    <Avatar.Image size={40} source={{ uri: postUser.profilePic }} />
-                    <Text style={styles.userName}>{postUser.name}</Text>
+        {posts.length === 0 ? (
+          <Text style={styles.noPostsText}>Henüz hiç post paylaşmadınız</Text>
+        ) : (
+          posts.map((post) => {
+            const postUser = users[post.userId];
+            const isFavorite = favorites.some((fav) => fav._id === post._id);
+            return (
+              <Card key={post._id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  {postUser && (
+                    <View style={styles.userInfo}>
+                      <Avatar.Image size={40} source={{ uri: postUser.profilePic }} />
+                      <Text style={styles.userName}>{postUser.name}</Text>
+                    </View>
+                  )}
+                  <View style={styles.buttonContainer}>
+                    <IconButton
+                      icon="pencil"
+                      onPress={() => handleUpdatePost(post._id)}
+                    />
+                    <IconButton
+                      icon="delete"
+                      onPress={() => handleDeletePost(post._id)}
+                      color="red"
+                    />
                   </View>
-                )}
-                <View style={styles.buttonContainer}>
-                  <IconButton
-                    icon="pencil"
-                    onPress={() => handleUpdatePost(post._id)}
-                  />
-                  <IconButton
-                    icon="delete"
-                    onPress={() => handleDeletePost(post._id)}
-                    color="red"
-                  />
                 </View>
-              </View>
-              <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
-                <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
-              </TouchableOpacity>
-              <Card.Content>
-                <Text style={styles.title}>{post.title}</Text>
-                <Text style={styles.caption}>{post.description}</Text>
-              </Card.Content>
-              <Card.Actions style={styles.cardActions}>
-                <LikeButton
-                  isLiked={post.likes.includes(user._id)}
-                  onPress={() => handleLike(post._id)}
-                  likeCount={post.likes.length}
-                />
-                <PaperButton
-                  icon={isFavorite ? "bookmark-remove-outline" : "bookmark-outline"}
-                  onPress={() => handleFavorite(post._id)}
-                >
-                  {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
-                </PaperButton>
-              </Card.Actions>
-            </Card>
-          );
-        })}
+                <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
+                  <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
+                </TouchableOpacity>
+                <Card.Content>
+                  <Text style={styles.title}>{post.title}</Text>
+                  <Text style={styles.caption}>{post.description}</Text>
+                </Card.Content>
+                <Card.Actions style={styles.cardActions}>
+                  <LikeButton
+                    isLiked={post.likes.includes(user._id)}
+                    onPress={() => handleLike(post._id)}
+                    likeCount={post.likes.length}
+                  />
+                  <PaperButton
+                    icon={isFavorite ? "bookmark-remove-outline" : "bookmark-outline"}
+                    onPress={() => handleFavorite(post._id)}
+                  >
+                    {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                  </PaperButton>
+                </Card.Actions>
+              </Card>
+            );
+          })
+        )}
       </ScrollView>
     </View>
   );
@@ -250,6 +254,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#6200ee',
+  },
+  noPostsText: {
+    textAlign: 'center',
+    fontSize: 18,
+    margin: 20,
+    color: '#333',
   },
   card: {
     margin: 10,
