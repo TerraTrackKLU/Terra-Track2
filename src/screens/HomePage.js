@@ -178,7 +178,9 @@ const HomePage = ({ navigation }) => {
                       size={40}
                       source={{ uri: postUser.profilePic }}
                     />
-                    <Text style={styles.userName}>{postUser.name}</Text>
+                    <Text style={styles.userName}>
+                      {postUser.name} {postUser.surname}
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -203,7 +205,9 @@ const HomePage = ({ navigation }) => {
                   likeCount={post.likes.length}
                 />
                 <PaperButton
-                  icon={isFavorite ? "bookmark-remove-outline" : "bookmark-outline"}
+                  icon={
+                    isFavorite ? "bookmark-remove-outline" : "bookmark-outline"
+                  }
                   onPress={() => handleFavorite(post._id)}
                 >
                   {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
@@ -295,10 +299,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
+    marginTop: 30,
   },
   header: {
     alignItems: "center",
     marginVertical: 20,
+    backgroundColor: "rgba(0, 128, 0, 0)",
   },
   postButton: {
     backgroundColor: "#6200ee",
