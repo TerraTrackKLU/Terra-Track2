@@ -162,7 +162,7 @@ const EditProfile = ({ navigation }) => {
         >
           <Image source={{ uri: profilePic }} style={styles.profilePic} />
           <Text style={styles.changeProfilePicText}>
-            Profil Resmini Değiştir
+            Change Profile Picture
           </Text>
         </TouchableOpacity>
         <View style={styles.inputContainer}>
@@ -198,7 +198,7 @@ const EditProfile = ({ navigation }) => {
           )}
         </View>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Hakkınızda</Text>
+          <Text style={styles.label}>About</Text>
           <TextInput
             style={[styles.input, styles.aboutInput]}
             value={about}
@@ -209,7 +209,7 @@ const EditProfile = ({ navigation }) => {
           />
         </View>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Mevcut Şifre</Text>
+          <Text style={styles.label}>Current Password</Text>
           <TextInput
             style={styles.input}
             value={currentPassword}
@@ -219,7 +219,7 @@ const EditProfile = ({ navigation }) => {
           />
         </View>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Yeni Şifre</Text>
+          <Text style={styles.label}>New Password</Text>
           <TextInput
             style={styles.input}
             value={newPassword}
@@ -229,7 +229,7 @@ const EditProfile = ({ navigation }) => {
           />
         </View>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Yeni Şifre Tekrar</Text>
+          <Text style={styles.label}>Confirm Password</Text>
           <TextInput
             style={styles.input}
             value={confirmNewPassword}
@@ -239,7 +239,7 @@ const EditProfile = ({ navigation }) => {
           />
         </View>
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
-          <Text style={styles.saveButtonText}>Değişiklikleri Kaydet</Text>
+          <Text style={styles.saveButtonText}>Save Changes</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

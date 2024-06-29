@@ -258,13 +258,23 @@
 // });
 
 // export default PostDetail;
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, TextInput, ActivityIndicator } from 'react-native';
-import { Button, IconButton, Card } from 'react-native-paper';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import axios from 'axios';
-import { BASE_URL } from '../constants/links';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  Image,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
+import { Button, IconButton, Card } from "react-native-paper";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import axios from "axios";
+import { BASE_URL } from "../constants/links";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const PostDetail = () => {
   const navigation = useNavigation();
@@ -273,9 +283,9 @@ const PostDetail = () => {
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [userId, setUserId] = useState(null);
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState("");
   const [loadingComments, setLoadingComments] = useState(true);
 
   useEffect(() => {
@@ -295,7 +305,9 @@ const PostDetail = () => {
 
     const fetchComments = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/comments/${routeId || postId}`);
+        const response = await axios.get(
+          `${BASE_URL}/comments/${routeId || postId}`
+        );
         setComments(response.data);
       } catch (error) {
         console.error("Error fetching comments:", error);
@@ -305,11 +317,11 @@ const PostDetail = () => {
     };
 
     const getUserIdAndName = async () => {
-      const id = await AsyncStorage.getItem('userId');
+      const id = await AsyncStorage.getItem("userId");
       setUserId(id);
 
       const response = await axios.get(`${BASE_URL}/auth/get-user`, {
-        headers: { userid: id }
+        headers: { userid: id },
       });
       setUserName(response.data.name);
     };
@@ -321,29 +333,32 @@ const PostDetail = () => {
 
   const handleFollowRoute = () => {
     if (post && post.points) {
-      navigation.navigate('FollowRoute', { points: post.points });
+      navigation.navigate("FollowRoute", { points: post.points });
     } else {
-      alert('Points data is missing.');
+      alert("Points data is missing.");
     }
   };
 
   const handleComment = async () => {
-    if (newComment.trim() !== '') {
+    if (newComment.trim() !== "") {
       try {
         const commentData = {
           route: routeId || postId,
           user: userId,
-          text: newComment
+          text: newComment,
         };
         const response = await axios.post(`${BASE_URL}/comments`, commentData);
-        setComments([...comments, { ...response.data, user: { _id: userId, name: userName } }]);
-        setNewComment('');
+        setComments([
+          ...comments,
+          { ...response.data, user: { _id: userId, name: userName } },
+        ]);
+        setNewComment("");
       } catch (error) {
-        console.error('Error posting comment', error);
-        Alert.alert('Error', 'Yorum gönderilemedi. Lütfen tekrar deneyin.');
+        console.error("Error posting comment", error);
+        Alert.alert("Error", "Yorum gönderilemedi. Lütfen tekrar deneyin.");
       }
     } else {
-      Alert.alert('Uyarı', 'Yorum boş olamaz.');
+      Alert.alert("Uyarı", "Yorum boş olamaz.");
     }
   };
 
@@ -367,55 +382,60 @@ const PostDetail = () => {
         </View>
       )}
       <View style={styles.contentContainer}>
-        <Button mode="contained" onPress={handleFollowRoute} style={styles.followButton}>
-          Rotayı Takip Et
+        <Button
+          mode="contained"
+          onPress={handleFollowRoute}
+          style={styles.followButton}
+        >
+          Follow the Route
         </Button>
         <View style={styles.tagsContainer}>
-          {post.tags && post.tags.map((tag, index) => (
-            <Text key={index} style={styles.tag}>
-              {tag}
-            </Text>
-          ))}
+          {post.tags &&
+            post.tags.map((tag, index) => (
+              <Text key={index} style={styles.tag}>
+                {tag}
+              </Text>
+            ))}
         </View>
         <Text style={styles.title}>{post.routeName || post.title}</Text>
         <Text style={styles.date}>{post.date}</Text>
         <View style={styles.detailsContainer}>
           <View style={styles.detailItem}>
-            <Text style={styles.detailTitle}>Mesafe</Text>
+            <Text style={styles.detailTitle}>Distance</Text>
             <Text style={styles.detailValue}>{post.distance}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.detailItem}>
-            <Text style={styles.detailTitle}>Zorluk</Text>
+            <Text style={styles.detailTitle}>Difficulty</Text>
             <Text style={styles.detailValue}>{post.difficulty}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.detailItem}>
-            <Text style={styles.detailTitle}>Toplam Süre</Text>
+            <Text style={styles.detailTitle}>Total Duration</Text>
             <Text style={styles.detailValue}>{post.duration}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.detailItem}>
-            <Text style={styles.detailTitle}>Rota Türü</Text>
+            <Text style={styles.detailTitle}>Route Type</Text>
             <Text style={styles.detailValue}>{post.routeType}</Text>
           </View>
         </View>
         <Text style={styles.description}>{post.description}</Text>
 
         <Card style={styles.card}>
-          <Card.Title title="Yorumlar ve Değerlendirmeler" />
+          <Card.Title title="Comments" />
           <Card.Content>
             {loadingComments ? (
               <ActivityIndicator size="large" color="#6200ee" />
             ) : comments.length === 0 ? (
-              <Text>Henüz yorum yapılmamış. İlk yorumu siz yapın!</Text>
+              <Text>No comments yet. Be the first to comment!</Text>
             ) : (
               comments.map((comment, index) => (
                 <View key={index} style={styles.comment}>
                   <Text style={styles.commentUser}>{comment.user.name}</Text>
                   <Text>{comment.text}</Text>
                   <Text style={styles.commentDate}>
-                    {new Date(comment.date).toLocaleDateString()}{' '}
+                    {new Date(comment.date).toLocaleDateString()}{" "}
                     {new Date(comment.date).toLocaleTimeString()}
                   </Text>
                 </View>
@@ -423,12 +443,16 @@ const PostDetail = () => {
             )}
             <TextInput
               style={styles.input}
-              placeholder="Yorumunuzu yazın..."
+              placeholder="Leave a comment..."
               value={newComment}
               onChangeText={(text) => setNewComment(text)}
             />
-            <Button mode="contained" onPress={handleComment} style={styles.submitButton}>
-              Yorum Gönder
+            <Button
+              mode="contained"
+              onPress={handleComment}
+              style={styles.submitButton}
+            >
+              Send Comment
             </Button>
           </Card.Content>
         </Card>
@@ -440,27 +464,27 @@ const PostDetail = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   contentContainer: {
     padding: 20,
   },
   followButton: {
     marginBottom: 20,
-    backgroundColor: '#6200ee',
+    backgroundColor: "#6200ee",
   },
   tagsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
   },
   tag: {
-    backgroundColor: '#03dac6',
-    color: 'white',
+    backgroundColor: "#03dac6",
+    color: "white",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
@@ -468,13 +492,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 10,
   },
   date: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 20,
   },
   detailsContainer: {
@@ -485,87 +509,87 @@ const styles = StyleSheet.create({
   },
   detailTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   detailValue: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   divider: {
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
     borderBottomWidth: 1,
     marginVertical: 10,
   },
   description: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginBottom: 20,
   },
   actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 20,
   },
   iconButtonContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   iconButton: {
-    backgroundColor: '#6200ee',
+    backgroundColor: "#6200ee",
     borderRadius: 50,
   },
   iconLabel: {
-    color: '#333',
+    color: "#333",
     fontSize: 14,
     marginTop: 5,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 10,
     marginBottom: 20,
   },
   mapErrorContainer: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 10,
     marginBottom: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e0e0e0',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#e0e0e0",
   },
   mapErrorText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   card: {
     marginTop: 20,
     borderRadius: 10,
   },
   comment: {
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
     borderBottomWidth: 1,
     paddingBottom: 10,
     marginBottom: 10,
   },
   commentUser: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 2,
   },
   commentDate: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
     marginTop: 10,
   },
   submitButton: {
     marginTop: 10,
-    backgroundColor: '#6200ee',
+    backgroundColor: "#6200ee",
   },
 });
 

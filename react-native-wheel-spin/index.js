@@ -177,7 +177,7 @@ const WheelSpin = ({ colors, texts, onFinish, onWinnerPress, winnerPost }) => {
       return (
         <TouchableOpacity onPress={onPress}>
           <View style={styles.button}>
-            <Textt style={styles.buttonText}>Çevir</Textt>
+            <Textt style={styles.buttonText}>Spin</Textt>
           </View>
         </TouchableOpacity>
       );

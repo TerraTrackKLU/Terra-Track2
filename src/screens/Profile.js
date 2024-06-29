@@ -96,7 +96,7 @@ const Profile = ({ navigation }) => {
           style={styles.editButton}
           onPress={() => navigation.navigate("EditProfile")}
         >
-          <Text style={styles.buttonText}>Düzenle</Text>
+          <Text style={styles.buttonText}>Edit Profile</Text>
         </TouchableOpacity>
 
         <View style={styles.buttonContainer}>
@@ -104,26 +104,26 @@ const Profile = ({ navigation }) => {
             style={styles.button}
             onPress={() => navigation.navigate("MyRoutes")}
           >
-            <Text style={styles.buttonText}>Rotalarım</Text>
+            <Text style={styles.buttonText}>My Routes</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.button}
             onPress={() => navigation.navigate("MyFavorites")}
           >
-            <Text style={styles.buttonText}>Favoriler</Text>
+            <Text style={styles.buttonText}>Favorites</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.button}
             onPress={() => navigation.navigate("MyPosts")}
           >
-            <Text style={styles.buttonText}>Postlarım</Text>
+            <Text style={styles.buttonText}>My Posts</Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.buttonText}>Çıkış Yap</Text>
+          <Text style={styles.buttonText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
