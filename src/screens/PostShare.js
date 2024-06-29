@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Button, StyleSheet, Text, Image, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -31,6 +40,7 @@ const PostShare = ({ navigation }) => {
 
     if (route.params && route.params.route) {
       const { routeName, distance, difficulty, duration, routeType, description, _id, activityType } = route.params.route;
+
       setTitle(routeName);
       setDistance(distance);
       setDifficulty(difficulty);
@@ -44,7 +54,7 @@ const PostShare = ({ navigation }) => {
 
   const handlePostShare = async () => {
     if (!user || !user._id) {
-      alert("User ID bulunamadı");
+      alert("User ID not found");
       return;
     }
 
@@ -67,19 +77,19 @@ const PostShare = ({ navigation }) => {
     try {
       const response = await axios.post(POST_SHARE, postData);
       if (response.status === 201) {
-        alert("Post başarıyla paylaşıldı!");
+        alert("Post successfully shared!!");
         navigation.goBack();
       }
     } catch (error) {
-      console.error("Post paylaşma hatası:", error);
+      console.error("Post sharing error:", error);
       console.log("Error response data:", error.response.data);
-      alert("Post paylaşma sırasında bir hata oluştu.");
+      alert("An error occurred while sharing a post.");
     }
   };
 
   const pickImage = async () => {
     if (images.length >= 3) {
-      alert("En fazla 3 resim ekleyebilirsiniz.");
+      alert("You can add up to 3 images.");
       return;
     }
 
@@ -127,14 +137,14 @@ const PostShare = ({ navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       <TextInput
         style={styles.input}
-        placeholder="Başlık"
+        placeholder="Title"
         placeholderTextColor="#888"
         value={title}
         onChangeText={setTitle}
       />
       <TextInput
         style={styles.input}
-        placeholder="İçerik"
+        placeholder="Content"
         placeholderTextColor="#888"
         value={content}
         onChangeText={setContent}
@@ -177,7 +187,7 @@ const PostShare = ({ navigation }) => {
       />
       <TextInput
         style={[styles.input, styles.textArea]}
-        placeholder="Açıklama"
+        placeholder="Description"
         placeholderTextColor="#888"
         value={description}
         onChangeText={setDescription}
@@ -185,7 +195,7 @@ const PostShare = ({ navigation }) => {
       />
 
       <TouchableOpacity style={styles.button} onPress={pickImage}>
-        <Text style={styles.buttonText}>Resim Ekle</Text>
+        <Text style={styles.buttonText}>Add Image</Text>
       </TouchableOpacity>
 
       <View style={styles.imageContainer}>
@@ -195,7 +205,7 @@ const PostShare = ({ navigation }) => {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handlePostShare}>
-        <Text style={styles.buttonText}>Post Paylaş</Text>
+        <Text style={styles.buttonText}>Post Share</Text>
       </TouchableOpacity>
     </ScrollView>
   );
