@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -31,16 +31,26 @@ const SaveRoute = () => {
         console.log(points);
     }, []);
 
+    const validateInputs = () => {
+        if (!routeName || !activityType || !distance || !elevationGain || !laps || !difficulty || !duration || !routeType) {
+            Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
+            return false;
+        }
+        return true;
+    };
+
     const saveRoute = async () => {
+        if (!validateInputs()) return;
+
         try {
             const response = await axios.post(SAVE_ROUTE, {
                 routeName,
                 activityType,
-                distance,
-                elevationGain,
+                distance: distance + ' km',
+                elevationGain: elevationGain + ' m',
                 laps,
                 difficulty,
-                duration,
+                duration: duration + ' saat',
                 routeType,
                 owner,
                 points,
@@ -49,6 +59,12 @@ const SaveRoute = () => {
             navigation.goBack();
         } catch (error) {
             console.error('Error saving route', error);
+        }
+    };
+
+    const handleNumberInput = (setter) => (value) => {
+        if (/^\d*\.?\d*$/.test(value)) {
+            setter(value);
         }
     };
 
@@ -74,31 +90,41 @@ const SaveRoute = () => {
                 style={styles.input}
                 placeholder="Mesafe (km)"
                 value={distance}
-                onChangeText={setDistance}
+                onChangeText={handleNumberInput(setDistance)}
+                keyboardType="numeric"
             />
             <TextInput
                 style={styles.input}
                 placeholder="İrtifa Kazancı (m)"
                 value={elevationGain}
-                onChangeText={setElevationGain}
+                onChangeText={handleNumberInput(setElevationGain)}
+                keyboardType="numeric"
             />
             <TextInput
                 style={styles.input}
                 placeholder="Tur Sayısı"
                 value={laps}
-                onChangeText={setLaps}
+                onChangeText={handleNumberInput(setLaps)}
+                keyboardType="numeric"
             />
-            <TextInput
-                style={styles.input}
-                placeholder="Zorluk"
-                value={difficulty}
-                onChangeText={setDifficulty}
-            />
+            <Picker
+                selectedValue={difficulty}
+                style={styles.picker}
+                onValueChange={(itemValue) => setDifficulty(itemValue)}
+            >
+                <Picker.Item label="Zorluk Seçin" value="" />
+                <Picker.Item label="Kolay" value="kolay" />
+                <Picker.Item label="Kolay-Orta" value="kolay-orta" />
+                <Picker.Item label="Orta" value="orta" />
+                <Picker.Item label="Orta-Zor" value="orta-zor" />
+                <Picker.Item label="Zor" value="zor" />
+            </Picker>
             <TextInput
                 style={styles.input}
                 placeholder="Toplam Süre (saat)"
                 value={duration}
-                onChangeText={setDuration}
+                onChangeText={handleNumberInput(setDuration)}
+                keyboardType="numeric"
             />
             <TextInput
                 style={styles.input}

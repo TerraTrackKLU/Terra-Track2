@@ -3,11 +3,10 @@ import { View, TextInput, Button, StyleSheet, Text, Image, ScrollView, Touchable
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { Picker } from "@react-native-picker/picker";
 import { BASE_URL } from "../constants/links";
 import { useSelector } from "react-redux";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";  // İkon için import
+import { Ionicons } from "@expo/vector-icons";
 
 const PostUpdate = () => {
   const [title, setTitle] = useState("");
@@ -18,7 +17,6 @@ const PostUpdate = () => {
   const [routeType, setRouteType] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
   const [tag, setTag] = useState("");
 
   const user = useSelector((state) => state.user.user);
@@ -39,7 +37,7 @@ const PostUpdate = () => {
         setRouteType(post.routeType);
         setDescription(post.description);
         setImages(post.images);
-        setSelectedTags(post.tags);
+        setTag(post.tags[0]); // Set the initial tag based on the first tag
       } catch (error) {
         console.error("Error fetching post details:", error);
       }
@@ -64,7 +62,7 @@ const PostUpdate = () => {
       routeType,
       description,
       images,
-      tags: selectedTags,
+      tags: [tag], // Include the tag in the post data
       userId: user._id,
       date,
     };
@@ -147,16 +145,6 @@ const PostUpdate = () => {
     );
   };
 
-  const handleTagChange = (tag) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-    } else if (selectedTags.length < 2) {
-      setSelectedTags([...selectedTags, tag]);
-    } else {
-      alert("En fazla 2 etiket seçebilirsiniz.");
-    }
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TextInput
@@ -175,32 +163,39 @@ const PostUpdate = () => {
         multiline
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Mesafe"
         placeholderTextColor="#888"
         value={distance}
-        onChangeText={setDistance}
+        editable={false}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Zorluk"
         placeholderTextColor="#888"
         value={difficulty}
-        onChangeText={setDifficulty}
+        editable={false}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Toplam Süre"
         placeholderTextColor="#888"
         value={duration}
-        onChangeText={setDuration}
+        editable={false}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.inputDisabled]}
         placeholder="Rota Türü"
         placeholderTextColor="#888"
         value={routeType}
-        onChangeText={setRouteType}
+        editable={false}
+      />
+      <TextInput
+        style={[styles.input, styles.inputDisabled]}
+        placeholder="Aktivite Türü"
+        placeholderTextColor="#888"
+        value={tag}
+        editable={false}
       />
       <TextInput
         style={[styles.input, styles.textArea]}
@@ -229,26 +224,6 @@ const PostUpdate = () => {
         ))}
       </View>
 
-      <Text style={styles.label}>Etiket Seç:</Text>
-      <Picker
-        selectedValue={tag}
-        style={styles.picker}
-        onValueChange={(itemValue) => {
-          if (selectedTags.includes(itemValue)) {
-            setSelectedTags(selectedTags.filter((t) => t !== itemValue));
-          } else if (selectedTags.length < 2) {
-            setSelectedTags([...selectedTags, itemValue]);
-          } else {
-            alert("En fazla 2 etiket seçebilirsiniz.");
-          }
-          setTag(itemValue);
-        }}
-      >
-        <Picker.Item label="Seçiniz" value="" />
-        <Picker.Item label="Yürüyüş" value="yürüyüş" />
-        <Picker.Item label="Kamp" value="kamp" />
-      </Picker>
-
       <TouchableOpacity style={styles.button} onPress={handleUpdatePost}>
         <Text style={styles.buttonText}>Post Güncelle</Text>
       </TouchableOpacity>
@@ -270,6 +245,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 10,
     backgroundColor: "#fff",
+  },
+  inputDisabled: {
+    backgroundColor: "#e9ecef",
+    color: "#6c757d",
   },
   textArea: {
     height: 80,
@@ -310,14 +289,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 10,
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-    marginBottom: 20,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
   },
 });
 
