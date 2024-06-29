@@ -8,7 +8,9 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
 } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 import axios from "axios";
 import { Card, Avatar, Button as PaperButton } from "react-native-paper";
 import { useSelector } from "react-redux";
@@ -27,6 +29,8 @@ const HomePage = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [searchVisible, setSearchVisible] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -122,19 +126,23 @@ const HomePage = ({ navigation }) => {
       if (isFavorite) {
         await axios.delete(`${BASE_URL}/favorites/${user._id}/${postId}`);
         setFavorites(favorites.filter((fav) => fav._id !== postId));
-        alert("Removed from favorites!");
+        alert("Favorilerden çıkarıldı!");
       } else {
         await axios.post(`${BASE_URL}/favorites`, {
           userId: user._id,
           postId: postId,
         });
         setFavorites([...favorites, { _id: postId }]);
-        alert("Added to favorites!");
+        alert("Favorilere eklendi!");
       }
     } catch (error) {
       console.error("Error updating favorites:", error);
     }
   };
+
+  const filteredPosts = posts.filter((post) =>
+    post.title.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -153,13 +161,32 @@ const HomePage = ({ navigation }) => {
           <Image source={require("../Images/logo.png")} style={styles.logo} />
           <Text style={styles.logoText}>Track</Text>
         </View>
+        <TouchableOpacity
+          onPress={() => setSearchVisible(!searchVisible)}
+          style={styles.searchIconContainer}
+        >
+          <Icon
+            name="search"
+            size={28}
+            color="white"
+            style={styles.searchIcon}
+          />
+        </TouchableOpacity>
       </View>
+      {searchVisible && (
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Ara..."
+          value={searchText}
+          onChangeText={(text) => setSearchText(text)}
+        />
+      )}
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {posts.map((post) => {
+        {filteredPosts.map((post) => {
           const postUser = users[post.userId];
           const isFavorite = favorites.some((fav) => fav._id === post._id);
           return (
@@ -177,6 +204,7 @@ const HomePage = ({ navigation }) => {
                     <Avatar.Image
                       size={40}
                       source={{ uri: postUser.profilePic }}
+                      style={styles.avatar}
                     />
                     <Text style={styles.userName}>
                       {postUser.name} {postUser.surname}
@@ -210,7 +238,7 @@ const HomePage = ({ navigation }) => {
                   }
                   onPress={() => handleFavorite(post._id)}
                 >
-                  {isFavorite ? "Remove Favorite" : "Add Favorite"}
+                  {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
                 </PaperButton>
               </Card.Actions>
             </Card>
@@ -242,7 +270,9 @@ const styles = StyleSheet.create({
   },
   card: {
     margin: 10,
-    borderRadius: 8,
+    borderRadius: 16,
+    elevation: 3,
+    backgroundColor: "#fff",
   },
   cardHeader: {
     flexDirection: "row",
@@ -263,6 +293,8 @@ const styles = StyleSheet.create({
   },
   postImage: {
     marginTop: 10,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   title: {
     fontSize: 20,
@@ -291,20 +323,26 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   logoContainer: {
-    width: "70%",
-    height: 40,
-    backgroundColor: "green",
-    borderRadius: 40,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    alignSelf: "center",
+    backgroundColor: "green",
+    borderRadius: 40,
+    paddingHorizontal: 20, // Logo ve yazı için yatayda boşluk
+    paddingVertical: 5, // Logo ve yazı için dikeyde boşluk
     marginTop: 30,
   },
   header: {
     alignItems: "center",
     marginVertical: 20,
-    backgroundColor: "rgba(0, 128, 0, 0)",
+  },
+  searchIconContainer: {
+    position: "absolute",
+    right: 20,
+    top: 35, // Arama ikonunu yukarıda hizalamak için
+  },
+  searchIcon: {
+    color: "green", // İkonun yeşil renk olması için
   },
   postButton: {
     backgroundColor: "#6200ee",
@@ -317,6 +355,15 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  searchInput: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginHorizontal: 10,
+    marginBottom: 10,
   },
 });
 
