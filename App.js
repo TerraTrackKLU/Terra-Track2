@@ -19,6 +19,7 @@ import MyPosts from "./src/screens/MyPosts";
 import SaveRoute from "./src/screens/SaveRoute";
 import UserProfile from "./src/screens/UserProfile"; // Make sure the path is correct
 import RouteDetail from "./src/screens/RouteDetail";
+import PostUpdate from "./src/screens/PostUpdate";
 
 const Stack = createNativeStackNavigator();
 
@@ -69,6 +70,7 @@ function App() {
         <Stack.Screen name="EditProfile" component={EdProf} />
         <Stack.Screen name="MyPosts" component={MyPosts} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
+        <Stack.Screen name="PostUpdate" component={PostUpdate} />
         {/* Make sure this is correctly placed */}
       </Stack.Navigator>
     </NavigationContainer>

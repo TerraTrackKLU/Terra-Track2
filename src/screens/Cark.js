@@ -8,12 +8,21 @@ const Cark = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [winnerPost, setWinnerPost] = useState(null);
+  const colors = ["#E07026", "#E8C22E", "#ABC937", "#4F991D", "#22AFD3"];
+
+  const [texts, setTexts] = useState([]);
 
   const fetchPosts = async () => {
     try {
       const response = await axios.get(POST_HOMEPAGE);
       setPosts(response.data);
+
+      const firstEight = await response.data.slice(0, 8);
+
+      newTexts = firstEight.map(() => "?");
+      setTexts(newTexts)
       setLoading(false);
+
     } catch (error) {
       console.error("Error fetching posts:", error);
       setLoading(false);
@@ -22,16 +31,17 @@ const Cark = ({ navigation }) => {
 
   useEffect(() => {
     fetchPosts();
+
   }, []);
 
-  const colors = ["#E07026", "#E8C22E", "#ABC937", "#4F991D", "#22AFD3"];
 
-  const texts = posts.map(() => "?");
+
+
 
   const handleWinnerPress = (winnerIndex) => {
     const selectedPost = posts[winnerIndex];
     if (selectedPost) {
-      navigation.navigate("PostDetail", { post: selectedPost });
+      navigation.navigate("PostDetail", { postId: selectedPost._id });
     } else {
       console.error("Selected post not found");
     }

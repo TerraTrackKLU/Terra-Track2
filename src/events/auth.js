@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { clearUser, setUser } from "../redux/slices/userSlice";
 import axios from "axios";
 import { GET_USER } from "../constants/links";
@@ -26,9 +26,10 @@ export const loadToken = () => async (dispatch) => {
 
     if (tokenData) {
       const { token, expirationDate } = JSON.parse(tokenData);
-
       if (new Date() < new Date(expirationDate)) {
         const decoded = jwtDecode(token); // Token'dan kullanıcı bilgilerini çözümleme
+        console.log('dataa', decoded)
+
         try {
           const response = await axios.get(GET_USER, {
             headers: {

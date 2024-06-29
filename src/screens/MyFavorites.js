@@ -76,36 +76,40 @@ const MyFavorites = ({ navigation }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {favorites.map((post) => {
-          const postUser = users[post.userId];
-          return (
-            <Card key={post._id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                {postUser && (
-                  <View style={styles.userInfo}>
-                    <Avatar.Image size={40} source={{ uri: postUser.profilePic }} />
-                    <Text style={styles.userName}>{postUser.name}</Text>
-                  </View>
-                )}
-              </View>
-              <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
-                <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
-              </TouchableOpacity>
-              <Card.Content>
-                <Text style={styles.title}>{post.title}</Text>
-                <Text style={styles.caption}>{post.description}</Text>
-              </Card.Content>
-              <Card.Actions style={styles.cardActions}>
-                <PaperButton 
-                  icon="bookmark-remove-outline" 
-                  onPress={() => removeFromFavorites(post._id)}
-                >
-                  Favorilerden Çıkar
-                </PaperButton>
-              </Card.Actions>
-            </Card>
-          );
-        })}
+        {favorites.length === 0 ? (
+          <Text style={styles.noFavoritesText}>Favorilediğiniz post bulunmamaktadır</Text>
+        ) : (
+          favorites.map((post) => {
+            const postUser = users[post.userId];
+            return (
+              <Card key={post._id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  {postUser && (
+                    <View style={styles.userInfo}>
+                      <Avatar.Image size={40} source={{ uri: postUser.profilePic }} />
+                      <Text style={styles.userName}>{postUser.name}</Text>
+                    </View>
+                  )}
+                </View>
+                <TouchableOpacity onPress={() => navigation.navigate('PostDetail', { postId: post._id })}>
+                  <Card.Cover source={{ uri: post.images[0] }} style={styles.postImage} />
+                </TouchableOpacity>
+                <Card.Content>
+                  <Text style={styles.title}>{post.title}</Text>
+                  <Text style={styles.caption}>{post.description}</Text>
+                </Card.Content>
+                <Card.Actions style={styles.cardActions}>
+                  <PaperButton 
+                    icon="bookmark-remove-outline" 
+                    onPress={() => removeFromFavorites(post._id)}
+                  >
+                    Favorilerden Çıkar
+                  </PaperButton>
+                </Card.Actions>
+              </Card>
+            );
+          })
+        )}
       </ScrollView>
     </View>
   );
@@ -125,6 +129,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#6200ee',
+  },
+  noFavoritesText: {
+    textAlign: 'center',
+    fontSize: 18,
+    margin: 20,
+    color: '#333',
   },
   card: {
     margin: 10,
