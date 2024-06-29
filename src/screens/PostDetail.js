@@ -397,7 +397,7 @@ const PostDetail = () => {
           </View>
         </View>
         <Text style={styles.description}>{post.description}</Text>
-        
+
         <Card style={styles.card}>
           <Card.Title title="Yorumlar ve Değerlendirmeler" />
           <Card.Content>

@@ -31,7 +31,7 @@ const Cark = ({ navigation }) => {
   const handleWinnerPress = (winnerIndex) => {
     const selectedPost = posts[winnerIndex];
     if (selectedPost) {
-      navigation.navigate("PostDetail", { post: selectedPost });
+      navigation.navigate("PostDetail", { postId: selectedPost._id });
     } else {
       console.error("Selected post not found");
     }
