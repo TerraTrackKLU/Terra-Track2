@@ -15,7 +15,9 @@ const FollowRoute = () => {
     const [isFollowing, setIsFollowing] = useState(false);
     const [distanceToStart, setDistanceToStart] = useState(null);
     const [userLocation, setUserLocation] = useState(null);
+    const [walkedRoute, setWalkedRoute] = useState([]);
     const mapRef = useRef(null);
+    const [heading, setHeading] = useState(0);
 
     useEffect(() => {
         const startLocationUpdates = async () => {
@@ -25,7 +27,7 @@ const FollowRoute = () => {
                 return;
             }
 
-            let location = await Location.getCurrentPositionAsync({});
+            let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
             setLocation(location);
             setUserLocation({
                 latitude: location.coords.latitude,
@@ -40,20 +42,30 @@ const FollowRoute = () => {
                 longitudeDelta: 0.01,
             });
 
-            // Konumu her iki saniyede bir güncelle
-            const locationUpdateInterval = setInterval(async () => {
-                let updatedLocation = await Location.getCurrentPositionAsync({});
-                setUserLocation({
-                    latitude: updatedLocation.coords.latitude,
-                    longitude: updatedLocation.coords.longitude,
-                });
-            }, 2000);
+            // Konumu sürekli güncelle
+            const sub = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.Highest,
+                    timeInterval: 1000, // Her saniyede bir güncelle
+                    distanceInterval: 1, // Konum değişikliklerini daha sık güncelle
+                },
+                (updatedLocation) => {
+                    setUserLocation({
+                        latitude: updatedLocation.coords.latitude,
+                        longitude: updatedLocation.coords.longitude,
+                    });
+                    setHeading(updatedLocation.coords.heading);
+                    if (isFollowing) {
+                        setWalkedRoute(prevWalkedRoute => [...prevWalkedRoute, updatedLocation.coords]);
+                    }
+                }
+            );
 
-            return () => clearInterval(locationUpdateInterval);
+            return () => sub.remove();
         };
 
         startLocationUpdates();
-    }, []);
+    }, [isFollowing]);
 
     useEffect(() => {
         if (userLocation && points.length > 0) {
@@ -102,11 +114,13 @@ const FollowRoute = () => {
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                 }}
+                mapType="satellite" // Harita tipini uydu moduna geçirme
             >
                 {points.map((point, index) => (
-                    <Marker key={index} coordinate={point} />
+                    (index === 0 || index === points.length - 1) && <Marker key={index} coordinate={point} pinColor="red" />
                 ))}
-                <Polyline coordinates={points} strokeColor="#000" strokeWidth={3} />
+                <Polyline coordinates={points} strokeColor="#000" strokeWidth={6} />
+                <Polyline coordinates={walkedRoute} strokeColor="green" strokeWidth={3} />
                 {userLocation && (
                     <Circle
                         center={userLocation}
@@ -115,7 +129,18 @@ const FollowRoute = () => {
                         fillColor="rgba(0,0,255,0.2)"
                     />
                 )}
-                {userLocation && points.length > 0 && (
+                {userLocation && (
+                    <Marker.Animated
+                        coordinate={userLocation}
+                        anchor={{ x: 0.5, y: 0.5 }}
+                        style={{ transform: [{ rotate: `${heading}deg` }] }}
+                    >
+                        <View style={styles.userLocationMarker}>
+                            <View style={styles.userLocationMarkerInner} />
+                        </View>
+                    </Marker.Animated>
+                )}
+                {userLocation && points.length > 0 && distanceToStart > 100 && (
                     <MapViewDirections
                         origin={userLocation}
                         destination={points[0]}
@@ -176,6 +201,20 @@ const styles = StyleSheet.create({
     buttonLabel: {
         color: 'white',
         fontSize: 14, // Buton metnini biraz küçült
+    },
+    userLocationMarker: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: 'rgba(0,0,255,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    userLocationMarkerInner: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: 'blue',
     },
 });
 
